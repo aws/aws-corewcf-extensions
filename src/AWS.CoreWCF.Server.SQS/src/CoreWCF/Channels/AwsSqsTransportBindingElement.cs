@@ -1,19 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Amazon.SQS;
 using AWS.CoreWCF.Server.SQS.CoreWCF.DispatchCallbacks;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common;
 using CoreWCF.Queue.Common.Configuration;
 using CoreWCF.Queue.CoreWCF.Queue;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreWCF.Channels
 {
     public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingElement
     {
-        private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
 
         /// <summary>
         /// Gets the scheme used by the binding, https
@@ -24,6 +21,11 @@ namespace CoreWCF.Channels
         /// Specifies the url of the queue
         /// </summary>
         public string QueueUrl { get; set; }
+
+        /// <summary>
+        /// Contains the collection of callbacks available to be called after a message is dispatched
+        /// </summary>
+        public IDispatchCallbacksCollection DispatchCallbacksCollection { get; set; }
 
         /// <summary>
         /// Creates a new instance of the AwsSqsTransportBindingElement class
@@ -39,12 +41,13 @@ namespace CoreWCF.Channels
         {
             QueueUrl = queueUrl;
             ConcurrencyLevel = concurrencyLevel;
-            _dispatchCallbacksCollection = dispatchCallbacksCollection;
+            DispatchCallbacksCollection = dispatchCallbacksCollection;
             MaxReceivedMessageSize = maxMessageSize;
         }
 
         private AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
         {
+            DispatchCallbacksCollection = other.DispatchCallbacksCollection;
             QueueUrl = other.QueueUrl;
             ConcurrencyLevel = other.ConcurrencyLevel;
             MaxReceivedMessageSize = other.MaxReceivedMessageSize;
@@ -73,7 +76,7 @@ namespace CoreWCF.Channels
                 serviceDispatcher,
                 QueueUrl,
                 messageEncoding,
-                _dispatchCallbacksCollection,
+                DispatchCallbacksCollection,
                 ConcurrencyLevel);
         }
     }
