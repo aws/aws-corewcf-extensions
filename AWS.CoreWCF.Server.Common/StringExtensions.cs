@@ -24,6 +24,6 @@ public static class StringExtensions
     /// <returns>A stream containing the string data encoded with specified encoding</returns>
     public static Stream ToStream(this string str, Encoding encoding)
     {
-        return new MemoryStream(encoding.GetBytes(str ?? ""));
+        return new MemoryStream(encoding.GetBytes(str));
     }
 }

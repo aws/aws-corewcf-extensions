@@ -70,7 +70,6 @@ namespace CoreWCF.Channels
             var serviceDispatcher = context.BindingParameters.Find<IServiceDispatcher>();
             var messageEncoding = context.Binding.Elements.Find<TextMessageEncodingBindingElement>().WriteEncoding;
 
-
             return new AwsSqsTransport(
                 services,
                 serviceDispatcher,

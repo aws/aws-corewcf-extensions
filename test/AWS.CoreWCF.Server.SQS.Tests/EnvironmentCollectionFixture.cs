@@ -13,11 +13,11 @@ public class EnvironmentCollectionFixture
     private const string SuccessTopicArnEnvVariable = "SUCCESS_TOPIC_ARN";
     private const string FailureTopicArnEnvVariable = "FAILURE_TOPIC_ARN";
 
-    public static string? AccessKey { get; set; }
-    public static string? SecretKey { get; set; }
-    public static string? QueueUrl { get; set; }
-    public static string? SuccessTopicArn { get; set; }
-    public static string? FailureTopicArn { get; set; }
+    public static string AccessKey { get; set; } = string.Empty;
+    public static string SecretKey { get; set; } = string.Empty;
+    public static string QueueUrl { get; set; } = string.Empty;
+    public static string SuccessTopicArn { get; set; } = string.Empty;
+    public static string FailureTopicArn { get; set; } = string.Empty;
 
     public EnvironmentCollectionFixture()
     {

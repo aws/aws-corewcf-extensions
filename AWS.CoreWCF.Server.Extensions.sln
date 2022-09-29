@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Queue", "..\birojna
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.RabbitMQ", "..\birojnayak\CoreWCF\src\CoreWCF.RabbitMQ\src\CoreWCF.RabbitMQ.csproj", "{19498445-02AF-4990-A660-A677B472E4E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.CoreWCF.Server.Common", "AWS.CoreWCF.Server.Common\AWS.CoreWCF.Server.Common.csproj", "{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Server.Common", "AWS.CoreWCF.Server.Common\AWS.CoreWCF.Server.Common.csproj", "{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Primitives", "..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj", "{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

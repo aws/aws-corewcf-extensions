@@ -1,6 +1,4 @@
-﻿using AWS.CoreWCF.Server.Common;
-
-namespace AWS.CoreWCF.Server.SQS.Tests.TestHelpers;
+﻿namespace AWS.CoreWCF.Server.SQS.Tests.TestHelpers;
 
 public class MessageHelper
 {
@@ -13,25 +11,19 @@ public class MessageHelper
     </s:Header>
     <s:Body>
         <{1} xmlns=""http://tempuri.org/"">
-            <name>TestMessage</name>
+            <toLog>{2}</toLog>
         </{1}>
     </s:Body>
 </s:Envelope>";
     
-
-    public static async Task SendMessageToQueueAsync(string iServiceName, string actionName)
+    public static async Task SendMessageToQueueAsync(string iServiceName, string actionName, string messageId)
     {
         var client = SdkClientHelper.GetSqsClientInstance();
-        await client.SendMessageAsync(EnvironmentCollectionFixture.GetTestQueueUrl(), GetTestMessage(iServiceName, actionName));
+        await client.SendMessageAsync(EnvironmentCollectionFixture.GetTestQueueUrl(), FormatTestMessage(iServiceName, actionName, messageId));
     }
 
-    private static string GetTestMessage(string iServiceName, string actionName)
+    private static string FormatTestMessage(string iServiceName, string actionName, string messageId)
     {
-        return string.Format(TestMessageTemplate, iServiceName, actionName);
-    }
-
-    private static Stream GetTestMessageAsStream(string iServiceName, string actionName)
-    {
-        return GetTestMessage(iServiceName, actionName).ToStream();
+        return string.Format(TestMessageTemplate, iServiceName, actionName, messageId);
     }
 }   

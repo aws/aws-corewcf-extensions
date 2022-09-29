@@ -15,12 +15,13 @@
   
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.2.95" />
-    <PackageReference Include="CoreWCF.Primitives" Version="1.1.0" />
+    <!--<PackageReference Include="CoreWCF.Primitives" Version="1.1.0" />-->
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
-    <ProjectReference Include="..\..\..\AWS.CoreWCF.Server.Common\AWS.CoreWCF.Server.Common.csproj" />
+	  <ProjectReference Include="..\..\..\..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
+	  <ProjectReference Include="..\..\..\..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj" />
+	  <ProjectReference Include="..\..\..\AWS.CoreWCF.Server.Common\AWS.CoreWCF.Server.Common.csproj" />
   </ItemGroup>
 
 </Project>

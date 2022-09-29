@@ -36,7 +36,7 @@ namespace CoreWCF.Channels
         {
             _services = services;
             _baseAddress = serviceDispatcher.BaseAddress;
-            _sqsClient = _services.GetRequiredService<AmazonSQSClient>();
+            _sqsClient = _services.GetRequiredService<IAmazonSQS>();
             _queueUrl = queueUrl;
             _encoding = encoding;
             _concurrencyLevel = concurrencyLevel;
@@ -75,7 +75,7 @@ namespace CoreWCF.Channels
                 //_logger.LogError("Error occurred when trying to receive message from SQS: {}", e);
                 return null;
             }
-        }
+        } 
 
         private QueueMessageContext GetContext(Amazon.SQS.Model.Message sqsMessage)
         {
@@ -123,44 +123,5 @@ namespace CoreWCF.Channels
             var deleteMessageResponse = await _sqsClient.DeleteMessageAsync(deleteMessageRequest);
             deleteMessageResponse.Validate();
         }
-
-        //private async Task<bool> UnprocessedMessagesExist()
-        //{
-        //    var request = new GetQueueAttributesRequest
-        //    {
-        //        QueueUrl = _queueSettings.QueueUrl,
-        //        AttributeNames = _pollingAttributes,
-        //    };
-        //    var response = await _sqsClient.GetQueueAttributesAsync(request);
-
-        //    if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
-        //    {
-        //        return response.ApproximateNumberOfMessages > 0;
-        //    }
-
-        //    _logger.LogWarning($"Failed to poll queue. HttpStatusCode: {response.HttpStatusCode}");
-        //    return false;
-        //}
-
-        //private async Task ConsumeMessages()
-        //{
-        //    _logger.LogInformation("Receiving message from SQS");
-
-        //    // Receive a single message from the queue.
-        //    var receiveMessageRequest = new ReceiveMessageRequest
-        //    {
-        //        AttributeNames = { "SentTimestamp" },
-        //        MaxNumberOfMessages = _queueSettings.MaxNumberOfMessages,
-        //        MessageAttributeNames = { "All" },
-        //        QueueUrl = _queueSettings.QueueUrl,
-        //        VisibilityTimeout = 0,
-        //        WaitTimeSeconds = 0,
-        //    };
-        //    var receiveMessageResponse = await _sqsClient.ReceiveMessageAsync(receiveMessageRequest);
-        //    // TODO: check status code
-
-        //    await DispatchMessages(receiveMessageResponse.Messages);
-        //    await DeleteMessages(receiveMessageResponse.Messages); // TODO: delete only after successful dispatch?
-        //}
     }
 }

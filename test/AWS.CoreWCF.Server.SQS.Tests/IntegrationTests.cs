@@ -12,37 +12,40 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 using AWS.CoreWCF.Server.SQS.CoreWCF.DispatchCallbacks;
+using AWS.CoreWCF.Server.SQS.Tests.TestHelpers;
+using Microsoft.AspNetCore.Hosting;
 
 namespace AWS.CoreWCF.Server.SQS.Tests;
 
 [Collection("Environment collection")]
 public class IntegrationTests : EnvironmentCollectionFixture
 {
-    private readonly ITestOutputHelper _output;
+    private readonly IWebHost _host;
 
     public IntegrationTests(ITestOutputHelper output)
     {
-        _output = output;
+        _host = ServiceHelper.CreateServiceHost<Startup>().Build();
+        _host.Start();
     }
 
     [Fact]
-    public async Task SomeTest()
+    public async Task Server_Reads_And_Dispatches_Message_From_Sqs()
     {
-        using var host = ServiceHelper.CreateServiceHost<Startup>().Build();
-        await host.StartAsync();
-        //await MessageHelper.SendMessageToQueueAsync(nameof(ILoggingService), nameof(ILoggingService.LogMessage));
+        var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);
+        LoggingService.InitializeTestCase(testCaseName);
 
-        //var loggingService = host.Services.GetService<LoggingService>();
-        //Assert.True(loggingService.ManualResetEvent.Wait(TimeSpan.FromSeconds(5)));
-        await Task.Delay(5000);
-        Console.WriteLine("Waiting for newline character...");
+        await MessageHelper.SendMessageToQueueAsync(
+            nameof(ILoggingService), 
+            nameof(ILoggingService.LogMessage),
+            testCaseName);
+
+        Assert.True(LoggingService.LogResults[testCaseName].Wait(TimeSpan.FromSeconds(5)));
     }
 
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddScoped<LoggingService>();
             services.AddServiceModelServices();
             services.AddSingleton<ILogger>(NullLogger.Instance);
 #if DEBUG
@@ -79,7 +82,6 @@ public class IntegrationTests : EnvironmentCollectionFixture
                             DispatchCallbacks.DefaultSuccessNotificationCallbackWithSns,
                             DispatchCallbacks.DefaultFailureNotificationCallbackWithSns)
                     ),
-                    //queueUrl);
             "/BasicSqsService/ILoggingService.svc");
         });
         }
