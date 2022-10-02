@@ -21,9 +21,7 @@ public class EnvironmentCollectionFixture
 
     public EnvironmentCollectionFixture()
     {
-        //using var file = File.OpenText();
         var json = File.ReadAllText("appsettings.test.json");
-        //var reader = new JsonTextReader(file);
         var appSettingsDictionary = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
 
         var settingsDict = appSettingsDictionary[AwsKey];
