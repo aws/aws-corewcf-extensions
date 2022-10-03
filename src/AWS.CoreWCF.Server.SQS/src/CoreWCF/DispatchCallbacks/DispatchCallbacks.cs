@@ -1,5 +1,6 @@
 ﻿using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
+using AWS.CoreWCF.Server.Common;
 using CoreWCF.Channels;
 using CoreWCF.Queue.Common;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,14 @@ public class DispatchCallbacks
             ? $"{nameof(QueueMessageContext)} of type {nameof(AwsSqsMessageContext)} was expected but type of {context.GetType()} was received." 
             : $"Succeeded to dispatch message to {sqsContext.LocalAddress} with receipt {sqsContext.MessageReceiptHandle}";
         
-        var publishRequest = new PublishRequest(topicArn, message, subject);
+        var publishRequest = new PublishRequest
+        {
+            TargetArn = topicArn,
+            Subject = subject,
+            Message = message,
+            MessageGroupId = subject.ToCrc32Hash(),
+            MessageDeduplicationId = message.ToCrc32Hash()
+        };
         await SendNotificationToSns(services, publishRequest);
     }
 
@@ -33,13 +41,29 @@ public class DispatchCallbacks
             ? $"{nameof(QueueMessageContext)} of type {nameof(AwsSqsMessageContext)} was expected but type of {context.GetType()} was received." 
             : $"Failed to dispatch message to {sqsContext.LocalAddress} with receipt {sqsContext.MessageReceiptHandle}";
         
-        var publishRequest = new PublishRequest(topicArn, message, subject);
+        var publishRequest = new PublishRequest
+        {
+            TargetArn = topicArn,
+            Subject = subject,
+            Message = message,
+            MessageGroupId = subject.ToCrc32Hash(),
+            MessageDeduplicationId = message.ToCrc32Hash()
+        };
         await SendNotificationToSns(services, publishRequest);
     }
 
     public static async Task SendNotificationToSns(IServiceProvider services, PublishRequest publishRequest)
     {
-        var snsClient = services.GetRequiredService<IAmazonSimpleNotificationService>();
-        await snsClient.PublishAsync(publishRequest);
+        try
+        {
+            var snsClient = services.GetRequiredService<IAmazonSimpleNotificationService>();
+            var response = await snsClient.PublishAsync(publishRequest);
+
+            response.Validate();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 }
