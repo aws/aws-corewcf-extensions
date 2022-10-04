@@ -114,7 +114,6 @@ namespace CoreWCF.Channels
 
         private async Task DeleteSqsMessageAsync(string? receiptHandle)
         {
-            // Delete the received message from the queue.
             var deleteMessageRequest = new DeleteMessageRequest
             {
                 QueueUrl = _queueUrl,
