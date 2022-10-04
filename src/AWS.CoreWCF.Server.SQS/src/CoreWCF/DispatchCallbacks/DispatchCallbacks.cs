@@ -11,7 +11,7 @@ public class DispatchCallbacks
 {
     public delegate Task NotificationDelegate(IServiceProvider services, QueueMessageContext context, string topicArn);
 
-    internal static async Task NullCallback(IServiceProvider services, QueueMessageContext context, string topicArn)
+    public static async Task NullCallback(IServiceProvider services, QueueMessageContext context, string topicArn)
     { }
 
     public static async Task DefaultSuccessNotificationCallbackWithSns(IServiceProvider services, QueueMessageContext context, string topicArn)
