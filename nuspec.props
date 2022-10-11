@@ -4,9 +4,9 @@
     <Owners>Amazon Web Services</Owners>
     <Authors>Amazon Web Services</Authors>
     <Copyright>Amazon Web Services</Copyright>
-    <Description>AWS CoreWCF Server Extensions</Description>
+    <Description>AWS CoreWCF Extensions</Description>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageTags>AWS CoreWCF Server Extensions SQS</PackageTags>
+    <PackageTags>AWS CoreWCF Server WCF Client Extensions SQS</PackageTags>
     <PackageProjectUrl>[**INSERT GITHUB PROJECT LINK**]</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
