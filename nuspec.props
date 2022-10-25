@@ -4,10 +4,10 @@
     <Owners>Amazon Web Services</Owners>
     <Authors>Amazon Web Services</Authors>
     <Copyright>Amazon Web Services</Copyright>
-    <Description>AWS CoreWCF Extensions</Description>
+    <Description>Extensions library enabling AWS cloud service integration with CoreWCF</Description>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageTags>AWS CoreWCF Server WCF Client Extensions SQS</PackageTags>
-    <PackageProjectUrl>[**INSERT GITHUB PROJECT LINK**]</PackageProjectUrl>
+    <PackageTags>CoreWCF WCF AWS Server Client Extensions SQS</PackageTags>
+    <PackageProjectUrl>https://github.com/aws/aws-corewcf-extensions</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <UseFullSemVerForNuGet>true</UseFullSemVerForNuGet>
