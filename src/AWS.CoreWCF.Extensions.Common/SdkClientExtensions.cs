@@ -1,6 +1,6 @@
 ﻿using Amazon.Runtime;
 
-namespace AWS.Extensions.Common;
+namespace AWS.CoreWCF.Extensions.Common;
 
 public static class SdkClientExtensions
 {
