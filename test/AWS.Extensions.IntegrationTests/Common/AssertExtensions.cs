@@ -1,13 +1,16 @@
 ﻿using Amazon.SQS;
-using AWS.Extensions.Common;
+using AWS.CoreWCF.Extensions.Common;
 using Xunit;
 
 namespace AWS.Extensions.IntegrationTests.Common;
 
 public class SqsAssert
 {
-    public static async Task QueueIsEmpty(IAmazonSQS sqsClient, string queueUrl, int maxRetries = 3, int retryDelayInSeconds = 1)
+    public static async Task QueueIsEmpty(IAmazonSQS sqsClient, string queueName, int maxRetries = 3, int retryDelayInSeconds = 1)
     {
+        var queueUrlResponse = await sqsClient.GetQueueUrlAsync(queueName);
+        var queueUrl = queueUrlResponse.QueueUrl;
+
         var queueIsEmpty = false;
         var attributesList = new List<string>
         {

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AWS.Extensions.Common\AWS.Extensions.Common.csproj" />
+    <ProjectReference Include="..\AWS.CoreWCF.Extensions.Common\AWS.CoreWCF.Extensions.Common.csproj" />
   </ItemGroup>
 
 </Project>

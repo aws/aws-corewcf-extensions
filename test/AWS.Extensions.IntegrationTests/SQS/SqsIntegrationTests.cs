@@ -22,7 +22,7 @@ public class SqsIntegrationTests
     public async Task Server_Reads_And_Dispatches_Message_From_Sqs()
     {
         var sqsClient = _clientAndServerFixture.SqsClient;
-        var queueUrl = _clientAndServerFixture.GetQueueUrl();
+        var queueUrl = _clientAndServerFixture.GetQueueName();
         var credentials = ClientAndServerFixture.GetCredentials();
 
         var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);

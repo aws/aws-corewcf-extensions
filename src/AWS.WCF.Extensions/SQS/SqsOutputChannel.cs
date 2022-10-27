@@ -3,7 +3,9 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
 using Amazon.SQS;
-using AWS.Extensions.Common;
+using Amazon.SQS.Model;
+using AWS.CoreWCF.Extensions.Common;
+using Message = System.ServiceModel.Channels.Message;
 
 namespace AWS.WCF.Extensions.SQS;
 
@@ -55,8 +57,7 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     /// Open the channel for use. We do not have any blocking work to perform so this is a no-op
     /// </summary>
     protected override void OnOpen(TimeSpan timeout)
-    {
-    }
+    { }
 
     protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
     {
@@ -64,25 +65,19 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     }
 
     protected override void OnEndOpen(IAsyncResult result)
-    {
-    }
+    { }
 
     protected override void OnAbort()
-    {
-    }
+    { }
     
     protected override void OnClose(TimeSpan timeout)
-    {
-    }
+    { }
 
-    protected override IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state)
-    {
-        return Task.CompletedTask;
-    }
+    protected override IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state) 
+    { return Task.CompletedTask; }
 
     protected override void OnEndClose(IAsyncResult result)
-    {
-    }
+    { }
     
     /// <summary>
     /// Address the Message and serialize it into a byte array.
@@ -108,7 +103,16 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
         try
         {
             var serializedMessage = Encoding.UTF8.GetString(messageBuffer.ToArray());
-            var response = _sqsClient.SendMessageAsync(_queueUrl.ToString(), serializedMessage).Result;
+            var sendMessageRequest = new SendMessageRequest
+            {
+                MessageBody = serializedMessage,
+                QueueUrl = _queueUrl.ToString()
+            };
+            if (_queueUrl.ToString().EndsWith(".fifo", StringComparison.InvariantCultureIgnoreCase))
+            {
+                sendMessageRequest.MessageGroupId = _queueUrl.ToString();
+            }
+            var response = _sqsClient.SendMessageAsync(sendMessageRequest).Result;
             response.Validate();
         }
         finally
@@ -124,16 +128,11 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     }
     
     public IAsyncResult BeginSend(Message message, AsyncCallback callback, object state)
-    {
-        return Task.CompletedTask;
-    }
+    { return Task.CompletedTask; }
 
     public IAsyncResult BeginSend(Message message, TimeSpan timeout, AsyncCallback callback, object state)
-    {
-        return BeginSend(message, callback, state);
-    }
+    { return BeginSend(message, callback, state); }
 
     public void EndSend(IAsyncResult result)
-    {
-    }
+    { }
 }

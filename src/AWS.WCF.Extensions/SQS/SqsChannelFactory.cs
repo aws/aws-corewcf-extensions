@@ -9,8 +9,8 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
     private MessageEncoderFactory _messageEncoderFactory;
     private AwsSqsTransportBindingElement _bindingElement;
 
-    internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, BindingContext context)
-        : base(context.Binding)
+internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, BindingContext context)
+    : base(context.Binding)
     {
         _bindingElement = bindingElement;
         _bufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);

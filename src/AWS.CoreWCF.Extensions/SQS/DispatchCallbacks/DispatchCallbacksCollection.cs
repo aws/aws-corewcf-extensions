@@ -38,4 +38,8 @@ public class DispatchCallbacksCollectionFactory
             DispatchCallbackFactory.GetDefaultSuccessNotificationCallbackWithSns(successTopicArn),
             DispatchCallbackFactory.GetDefaultFailureNotificationCallbackWithSns(failureTopicArn));
     }
+    public static IDispatchCallbacksCollection GetNullCallbacksCollection()
+    {
+        return new DispatchCallbacksCollection();
+    }
 }

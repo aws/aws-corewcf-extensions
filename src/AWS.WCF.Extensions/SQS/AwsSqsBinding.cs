@@ -8,6 +8,11 @@ public class AwsSqsBinding : Binding
     public override string Scheme => SqsConstants.Scheme;
 
     /// <summary>
+    /// Url of the queue
+    /// </summary>
+    public string QueueUrl { get; }
+
+    /// <summary>
     /// Gets the encoding binding element
     /// </summary>
     public TextMessageEncodingBindingElement? Encoding { get; }
@@ -19,11 +24,12 @@ public class AwsSqsBinding : Binding
 
     public AwsSqsBinding(
         IAmazonSQS sqsClient,
-        string queueUrl, 
-        long maxMessageSize = SqsDefaults.MaxReceivedMessageSize, 
-        long maxBufferPoolSize = SqsDefaults.MaxReceivedMessageSize)
+        string queueName, 
+        long maxMessageSize = SqsDefaults.MaxSendMessageSize, 
+        long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize)
     {
-        Transport = new AwsSqsTransportBindingElement(sqsClient, queueUrl, maxMessageSize, maxBufferPoolSize);
+        QueueUrl = sqsClient.GetQueueUrlAsync(queueName).Result.QueueUrl;
+        Transport = new AwsSqsTransportBindingElement(sqsClient, QueueUrl, maxMessageSize, maxBufferPoolSize);
         Encoding = new TextMessageEncodingBindingElement();
     }
 

@@ -3,8 +3,10 @@ using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
+using Amazon.SQS.Model;
+using AWS.CoreWCF.Extensions.Common;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
-using AWS.Extensions.Common;
+using AWS.CoreWCF.Extensions.SQS.Infrastructure;
 using AWS.Extensions.IntegrationTests.SQS.TestService;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Configuration;
@@ -32,7 +34,7 @@ public class ClientAndServerFixture : IDisposable
     private const string AwsKey = "AWS";
     private const string AccessKeyEnvVariable = "AWS_ACCESS_KEY_ID";
     private const string SecretKeyEnvVariable = "AWS_SECRET_ACCESS_KEY";
-    private const string TestQueueUrlEnvVariable = "TEST_QUEUE_URL";
+    private const string TestQueueNameEnvVariable = "TEST_QUEUE_NAME";
     private const string SuccessTopicArnEnvVariable = "SUCCESS_TOPIC_ARN";
     private const string FailureTopicArnEnvVariable = "FAILURE_TOPIC_ARN";
 
@@ -40,7 +42,7 @@ public class ClientAndServerFixture : IDisposable
 
     public static string AccessKey { get; set; } = string.Empty;
     public static string SecretKey { get; set; } = string.Empty;
-    public static string QueueUrl { get; set; } = string.Empty;
+    public static string QueueName { get; set; } = string.Empty;
     public static string SuccessTopicArn { get; set; } = string.Empty;
     public static string FailureTopicArn { get; set; } = string.Empty;
     public IWebHost Host { get; private set; }
@@ -52,13 +54,13 @@ public class ClientAndServerFixture : IDisposable
         ReadTestEnvironmentSettingsFromFile(Path.Combine("SQS", "appsettings.test.json"));
         CreateAndStartHost();
         CreateAndOpenClientChannel();
-        EnsureQueueIsEmpty();
+        //EnsureQueueIsEmpty();
     }
 
     private void EnsureQueueIsEmpty()
     {
-        var response = SqsClient.PurgeQueueAsync(QueueUrl).Result;
-        response.Validate();
+        //var response = SqsClient.PurgeQueueAsync(QueueUrl).Result;
+        //response.Validate();
     }
 
     public void Dispose()
@@ -78,8 +80,8 @@ public class ClientAndServerFixture : IDisposable
     private void CreateAndOpenClientChannel()
     {
         SqsClient = GetSqsClient();
-        var sqsBinding = new WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueUrl);
-        var endpointAddress = new EndpointAddress(new Uri(QueueUrl));
+        var sqsBinding = new WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueName);
+        var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
         _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
         Channel = _factory.CreateChannel();
         ((System.ServiceModel.Channels.IChannel)Channel).Open();
@@ -95,9 +97,9 @@ public class ClientAndServerFixture : IDisposable
         return new AmazonSQSClient(GetCredentials());
     }
 
-    public string GetQueueUrl()
+    public string GetQueueName()
     {
-        return QueueUrl;
+        return QueueName;
     }
 
     private void ReadTestEnvironmentSettingsFromFile(string settingsFilePath)
@@ -108,7 +110,7 @@ public class ClientAndServerFixture : IDisposable
         var settingsDict = appSettingsDictionary[AwsKey];
         AccessKey = settingsDict[AccessKeyEnvVariable];
         SecretKey = settingsDict[SecretKeyEnvVariable];
-        QueueUrl = settingsDict[TestQueueUrlEnvVariable];
+        QueueName = settingsDict[TestQueueNameEnvVariable];
         SuccessTopicArn = settingsDict[SuccessTopicArnEnvVariable];
         FailureTopicArn = settingsDict[FailureTopicArnEnvVariable];
     }
@@ -125,18 +127,61 @@ public class ClientAndServerFixture : IDisposable
                 builder.AddConsole();
             });
 #endif
-            services.AddDefaultAWSOptions(new AWSOptions
-            {
-                Credentials = GetCredentials()
-            });
-            services.AddAWSService<IAmazonSQS>();
+            //services.AddDefaultAWSOptions(new AWSOptions
+            //{
+            //    Credentials = GetCredentials()
+            //});
+            //services.AddAWSService<IAmazonSQS>();
+
+            services.AddSQSClient(QueueName, 
+                GetCredentials(),
+                (sqsClient, queueName) =>
+                {
+                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
+                        .SetDefaultValues()
+                        .WithFIFO()
+                        .WithManagedServerSideEncryption());
+                }
+            );
+
+            services.AddSQSClient("newQueue1.fifo",
+                awsOptions =>
+                {
+                    awsOptions.Credentials = GetCredentials();
+                },
+                (sqsClient, queueName) =>
+                {
+                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
+                        .SetDefaultValues()
+                        .WithFIFO()
+                        .WithDeadLetterQueue()
+                        .WithManagedServerSideEncryption())
+                        .WithBasicPolicy(queueName);
+                }
+            );
+
+            services.AddSQSClient("newQueue2.fifo",
+                awsOptions =>
+                {
+                    awsOptions.Credentials = GetCredentials();
+                },
+                (sqsClient, queueName) =>
+                {
+                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
+                        .SetDefaultValues()
+                        .WithFIFO()
+                        .WithDeadLetterQueue()
+                        .WithManagedServerSideEncryption());
+                }
+            );
+
             services.AddAWSService<IAmazonSimpleNotificationService>();
             services.AddQueueTransport();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            var queueUrl = QueueUrl;
+            var queueName = QueueName;
             var concurrencyLevel = 1;
             var successTopicArn = SuccessTopicArn;
             var failureTopicArn = FailureTopicArn;
@@ -145,7 +190,7 @@ public class ClientAndServerFixture : IDisposable
                 services.AddService<LoggingService>();
                 services.AddServiceEndpoint<LoggingService, ILoggingService>(
                     new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding(
-                        queueUrl,
+                        queueName,
                         concurrencyLevel,
                         DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(successTopicArn, failureTopicArn)
                     ),

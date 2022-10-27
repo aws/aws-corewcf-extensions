@@ -1,9 +1,9 @@
 ﻿using System.IO.Pipelines;
 using System.Text;
-using Amazon.SQS;
 using Amazon.SQS.Model;
-using AWS.Extensions.Common;
+using AWS.CoreWCF.Extensions.Common;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
+using AWS.CoreWCF.Extensions.SQS.Infrastructure;
 using CoreWCF;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common;
@@ -15,35 +15,34 @@ internal class AwsSqsTransport : IQueueTransport
 {
     private readonly IServiceProvider _services;
     private readonly Uri _baseAddress;
-    private readonly IAmazonSQS _sqsClient;
-    private readonly string _queueUrl;
+    private readonly string _queueName;
     private readonly Encoding _encoding;
-    private readonly int _concurrencyLevel = 1;
-
+    private readonly int _concurrencyLevel;
     private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
+    private readonly SQSMessageProvider _sqsMessageProvider;
 
     public int ConcurrencyLevel => _concurrencyLevel;
 
     public AwsSqsTransport(
         IServiceProvider services,
         IServiceDispatcher serviceDispatcher,
-        string queueUrl,
+        string queueName,
         Encoding encoding,
         IDispatchCallbacksCollection dispatchCallbacksCollection,
         int concurrencyLevel = 1)
     {
         _services = services;
         _baseAddress = serviceDispatcher.BaseAddress;
-        _sqsClient = _services.GetRequiredService<IAmazonSQS>();
-        _queueUrl = queueUrl;
+        _queueName = queueName;
         _encoding = encoding;
         _concurrencyLevel = concurrencyLevel;
         _dispatchCallbacksCollection = dispatchCallbacksCollection;
+        _sqsMessageProvider = _services.GetRequiredService<SQSMessageProvider>();
     }
 
     public async ValueTask<QueueMessageContext> ReceiveQueueMessageContextAsync(CancellationToken cancellationToken)
     {
-        var sqsMessage = await GetSqsMessageAsync();
+        var sqsMessage = await _sqsMessageProvider.ReceiveMessageAsync(_queueName);
 
         if (sqsMessage is null)
         {
@@ -53,27 +52,6 @@ internal class AwsSqsTransport : IQueueTransport
         var queueMessageContext = GetContext(sqsMessage);
         return queueMessageContext;
     }
-
-    private async Task<Message?> GetSqsMessageAsync()
-    {
-        var request = new ReceiveMessageRequest
-        {
-            QueueUrl = _queueUrl,
-            MaxNumberOfMessages = 1
-        };
-        try
-        {
-            var receiveMessageResponse = await _sqsClient.ReceiveMessageAsync(request);
-            receiveMessageResponse.Validate();
-
-            return receiveMessageResponse.Messages.FirstOrDefault();
-        }
-        catch (Exception e)
-        {
-            //_logger.LogError("Error occurred when trying to receive message from SQS: {}", e);
-            return null;
-        }
-    } 
 
     private QueueMessageContext GetContext(Message sqsMessage)
     {
@@ -98,7 +76,7 @@ internal class AwsSqsTransport : IQueueTransport
             await notificationCallback.Invoke(_services, queueMessageContext);
             
             var receiptHandle = (queueMessageContext as AwsSqsMessageContext)?.MessageReceiptHandle;
-            await DeleteSqsMessageAsync(receiptHandle);
+            await _sqsMessageProvider.DeleteSqsMessageAsync(_queueName, receiptHandle);
         }
 
         if (dispatchResult == QueueDispatchResult.Failed)
@@ -106,16 +84,5 @@ internal class AwsSqsTransport : IQueueTransport
             var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForFailedDispatch;
             await notificationCallback.Invoke(_services, queueMessageContext);
         }
-    }
-
-    private async Task DeleteSqsMessageAsync(string? receiptHandle)
-    {
-        var deleteMessageRequest = new DeleteMessageRequest
-        {
-            QueueUrl = _queueUrl,
-            ReceiptHandle = receiptHandle
-        };
-        var deleteMessageResponse = await _sqsClient.DeleteMessageAsync(deleteMessageRequest);
-        deleteMessageResponse.Validate();
     }
 }

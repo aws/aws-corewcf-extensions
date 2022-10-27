@@ -15,9 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
-    <ProjectReference Include="..\..\AWS.CoreWCF.Client.Extensions\AWS.WCF.Extensions.csproj" />
     <ProjectReference Include="..\..\src\AWS.CoreWCF.Extensions\AWS.CoreWCF.Extensions.csproj" />
-    <ProjectReference Include="..\..\src\AWS.CoreWCF.Server.SQS\src\AWS.CoreWCF.Extensions.csproj" />
     <ProjectReference Include="..\..\src\AWS.WCF.Extensions\AWS.WCF.Extensions.csproj" />
   </ItemGroup>
 

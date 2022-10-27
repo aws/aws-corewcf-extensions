@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -10,13 +11,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Queue", "..\birojna
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.RabbitMQ", "..\birojnayak\CoreWCF\src\CoreWCF.RabbitMQ\src\CoreWCF.RabbitMQ.csproj", "{19498445-02AF-4990-A660-A677B472E4E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.Extensions.Common", "src\AWS.Extensions.Common\AWS.Extensions.Common.csproj", "{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Primitives", "..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj", "{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{0504CCDB-7629-413F-BE27-31FC441DD585}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.WCF.Extensions", "src\AWS.WCF.Extensions\AWS.WCF.Extensions.csproj", "{16E6CB53-2515-4B8C-9134-49AF1F96346E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.CoreWCF.Extensions.Tests", "test\AWS.CoreWCF.Extensions.Tests\AWS.CoreWCF.Extensions.Tests.csproj", "{6C31941A-4A56-4576-AB11-A8668F895B2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.Extensions.Common.Tests", "test\AWS.Extensions.Common.Tests\AWS.Extensions.Common.Tests.csproj", "{25C7D7C0-2677-4FF9-B72A-03EC3D44084A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWS.WCF.Extensions.Tests", "test\AWS.WCF.Extensions.Tests\AWS.WCF.Extensions.Tests.csproj", "{2ABBD4AF-753B-40A6-B311-AAC96FFFA4CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Extensions.Common", "src\AWS.CoreWCF.Extensions.Common\AWS.CoreWCF.Extensions.Common.csproj", "{1ACA3DDE-04B4-4AAA-9690-DE3935503B03}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Extensions.SQS", "src\AWS.CoreWCF.Extensions.SQS\AWS.CoreWCF.Extensions.SQS.csproj", "{AA04FADA-F9E4-4612-A605-87BB46666A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +49,6 @@ Global
 		{19498445-02AF-4990-A660-A677B472E4E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19498445-02AF-4990-A660-A677B472E4E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19498445-02AF-4990-A660-A677B472E4E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A6ADE85B-1A14-4F39-AB0B-D4A05E30F19C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -56,6 +61,26 @@ Global
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C31941A-4A56-4576-AB11-A8668F895B2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C31941A-4A56-4576-AB11-A8668F895B2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C31941A-4A56-4576-AB11-A8668F895B2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C31941A-4A56-4576-AB11-A8668F895B2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25C7D7C0-2677-4FF9-B72A-03EC3D44084A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25C7D7C0-2677-4FF9-B72A-03EC3D44084A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25C7D7C0-2677-4FF9-B72A-03EC3D44084A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25C7D7C0-2677-4FF9-B72A-03EC3D44084A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ABBD4AF-753B-40A6-B311-AAC96FFFA4CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ABBD4AF-753B-40A6-B311-AAC96FFFA4CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ABBD4AF-753B-40A6-B311-AAC96FFFA4CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ABBD4AF-753B-40A6-B311-AAC96FFFA4CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA04FADA-F9E4-4612-A605-87BB46666A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA04FADA-F9E4-4612-A605-87BB46666A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA04FADA-F9E4-4612-A605-87BB46666A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA04FADA-F9E4-4612-A605-87BB46666A52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

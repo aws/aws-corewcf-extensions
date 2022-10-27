@@ -1,6 +1,6 @@
 ﻿using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
-using AWS.Extensions.Common;
+using AWS.CoreWCF.Extensions.Common;
 using AWS.CoreWCF.Extensions.SQS.Channels;
 using CoreWCF.Queue.Common;
 using Microsoft.Extensions.DependencyInjection;

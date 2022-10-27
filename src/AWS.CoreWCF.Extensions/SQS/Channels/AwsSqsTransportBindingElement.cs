@@ -9,16 +9,15 @@ namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
 public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingElement
 {
-
     /// <summary>
     /// Gets the scheme used by the binding, https
     /// </summary>
     public override string Scheme => "http";
 
     /// <summary>
-    /// Specifies the url of the queue
+    /// Specifies the name of the queue
     /// </summary>
-    public string QueueUrl { get; set; }
+    public string QueueName { get; set; }
 
     /// <summary>
     /// Contains the collection of callbacks available to be called after a message is dispatched
@@ -28,17 +27,17 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     /// <summary>
     /// Creates a new instance of the AwsSqsTransportBindingElement class
     /// </summary>
-    /// <param name="queueUrl">Url of the queue</param>
+    /// <param name="queueName">Name of the queue</param>
     /// <param name="concurrencyLevel">Maximum number of workers polling the queue for messages</param>
     /// <param name="dispatchCallbacksCollection">Collection of callbacks to be called after message dispatch</param>
     /// <param name="maxMessageSize">The maximum message size in bytes for messages in the queue</param>
     public AwsSqsTransportBindingElement(
-        string queueUrl, 
+        string queueName,
         int concurrencyLevel,
         IDispatchCallbacksCollection dispatchCallbacksCollection,
         long maxMessageSize = AwsSqsBinding.DefaultMaxMessageSize)
     {
-        QueueUrl = queueUrl;
+        QueueName = queueName;
         ConcurrencyLevel = concurrencyLevel;
         DispatchCallbacksCollection = dispatchCallbacksCollection;
         MaxReceivedMessageSize = maxMessageSize;
@@ -47,7 +46,7 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     private AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
     {
         DispatchCallbacksCollection = other.DispatchCallbacksCollection;
-        QueueUrl = other.QueueUrl;
+        QueueName = other.QueueName;
         ConcurrencyLevel = other.ConcurrencyLevel;
         MaxReceivedMessageSize = other.MaxReceivedMessageSize;
     }
@@ -72,7 +71,7 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
         return new AwsSqsTransport(
             services,
             serviceDispatcher,
-            QueueUrl,
+            QueueName,
             messageEncoding,
             DispatchCallbacksCollection,
             ConcurrencyLevel);

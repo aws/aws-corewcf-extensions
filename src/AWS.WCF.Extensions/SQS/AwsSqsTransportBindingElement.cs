@@ -9,7 +9,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     
     public IAmazonSQS SqsClient { get; set; }
 
-    public string QueueUrl { get; set; }
+    public string QueueName { get; set; }
     
     public override long MaxReceivedMessageSize { get; set; }
 
@@ -22,12 +22,12 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     /// <param name="maxBufferPoolSize">The maximum buffer pool size</param>
     public AwsSqsTransportBindingElement(
         IAmazonSQS sqsClient,
-        string queueUrl,
-        long maxMessageSize = SqsDefaults.MaxReceivedMessageSize,
+        string queueName,
+        long maxMessageSize = SqsDefaults.MaxSendMessageSize,
         long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize)
     {
         SqsClient = sqsClient;
-        QueueUrl = queueUrl;
+        QueueName = queueName;
         MaxReceivedMessageSize = maxMessageSize;
         MaxBufferPoolSize = maxBufferPoolSize;
     }
@@ -35,7 +35,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     protected AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
     {
         SqsClient = other.SqsClient;
-        QueueUrl = other.QueueUrl;
+        QueueName = other.QueueName;
         MaxReceivedMessageSize = other.MaxReceivedMessageSize;
         MaxBufferPoolSize = other.MaxBufferPoolSize;
     }

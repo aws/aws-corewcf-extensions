@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.4.14" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.7" />
   </ItemGroup>
@@ -20,7 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj" />
     <ProjectReference Include="..\..\..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
-    <ProjectReference Include="..\AWS.Extensions.Common\AWS.Extensions.Common.csproj" />
+    <ProjectReference Include="..\AWS.CoreWCF.Extensions.Common\AWS.CoreWCF.Extensions.Common.csproj" />
   </ItemGroup>
 
 </Project>

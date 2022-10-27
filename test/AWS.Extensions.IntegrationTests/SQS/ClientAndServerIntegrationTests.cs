@@ -22,13 +22,13 @@ public class ClientAndServerIntegrationTests
     {
         var clientService = _clientAndServerFixture.Channel;
         var sqsClient = _clientAndServerFixture.SqsClient;
-        var queueUrl = _clientAndServerFixture.GetQueueUrl();
+        var queueName = _clientAndServerFixture.GetQueueName();
 
         var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);
         LoggingService.InitializeTestCase(testCaseName);
         clientService.LogMessage(testCaseName);
         
         Assert.True(LoggingService.LogResults[testCaseName].Wait(TimeSpan.FromSeconds(5)));
-        await SqsAssert.QueueIsEmpty(sqsClient, queueUrl);
+        await SqsAssert.QueueIsEmpty(sqsClient, queueName);
     }
 }
