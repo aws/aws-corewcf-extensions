@@ -61,7 +61,8 @@ public static class CreateQueueRequestExtensions
             { QueueAttributeName.MaximumMessageSize, MaxSQSMessageSizeInBytes.ToString() },
             { QueueAttributeName.MessageRetentionPeriod, MaxSQSMessageRetentionPeriodInSeconds.ToString() },
             { QueueAttributeName.ReceiveMessageWaitTimeSeconds, DefaultReceiveMessageWaitTimeSeconds.ToString() },
-            { QueueAttributeName.VisibilityTimeout, DefaultVisibilityTimeoutInSeconds.ToString() }
+            { QueueAttributeName.VisibilityTimeout, DefaultVisibilityTimeoutInSeconds.ToString() },
+            { QueueAttributeName.SqsManagedSseEnabled, true.ToString() }
         };
         return defaultAttributes;
     }

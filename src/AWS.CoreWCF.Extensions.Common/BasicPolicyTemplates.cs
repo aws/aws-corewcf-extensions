@@ -15,7 +15,13 @@ public class BasicPolicyTemplates
         ""AWS"": ""{AccountIdPlaceholder}""
       }},
       ""Action"": [
-        ""SQS:*""
+        ""sqs:CreateQueue"",
+        ""sqs:DeleteMessage"",
+        ""sqs:GetQueueAttributes"",
+        ""sqs:GetQueueUrl"",
+        ""sqs:ReceiveMessage"",
+        ""sqs:SendMessage"",
+        ""sqs:SetQueueAttributes""
       ],
       ""Resource"": ""{SQSArnPlaceholder}""
     }}

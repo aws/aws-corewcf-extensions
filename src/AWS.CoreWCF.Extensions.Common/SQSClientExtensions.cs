@@ -80,9 +80,9 @@ public static class SQSClientExtensions
 
     public static IAmazonSQS EnsureSQSQueue(this IAmazonSQS sqsClient, CreateQueueRequest createQueueRequest)
     {
+        var queueName = createQueueRequest.QueueName;
         try
         {
-            var queueName = createQueueRequest.QueueName;
             var response = sqsClient.GetQueueUrlAsync(queueName).Result;
             response.Validate();
         }
@@ -93,6 +93,8 @@ public static class SQSClientExtensions
                 var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequest);
                 var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
                 response.Validate();
+
+                sqsClient.WithBasicPolicy(queueName);
             }
 
             throw;
