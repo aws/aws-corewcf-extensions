@@ -44,7 +44,30 @@ public static class CreateQueueRequestExtensions
 
     public static CreateQueueRequest WithManagedServerSideEncryption(this CreateQueueRequest request, bool useManagedServerSideEncryption = true)
     {
+        if (useManagedServerSideEncryption)
+        {
+            request.Attributes.Remove(QueueAttributeName.KmsMasterKeyId);
+            request.Attributes.Remove(QueueAttributeName.KmsDataKeyReusePeriodSeconds);
+        }
+
         request.Attributes[QueueAttributeName.SqsManagedSseEnabled] = useManagedServerSideEncryption.ToString();
+        return request;
+    }
+
+    public static CreateQueueRequest WithKMSEncryption(this CreateQueueRequest request, string kmsMasterKeyId, int kmsDataKeyReusePeriodInSeconds = 300)
+    {
+        request.Attributes[QueueAttributeName.SqsManagedSseEnabled] = false.ToString();
+        request.Attributes[QueueAttributeName.KmsMasterKeyId] = kmsMasterKeyId;
+        request.Attributes[QueueAttributeName.KmsDataKeyReusePeriodSeconds] = kmsDataKeyReusePeriodInSeconds.ToString();
+
+        return request;
+    }
+
+    public static CreateQueueRequest WithoutKMSEncryption(this CreateQueueRequest request)
+    {
+        request.Attributes.Remove(QueueAttributeName.KmsMasterKeyId);
+        request.Attributes.Remove(QueueAttributeName.KmsDataKeyReusePeriodSeconds);
+
         return request;
     }
 
@@ -86,5 +109,16 @@ public static class CreateQueueRequestExtensions
             return redrivePolicy;
         }
         return null;
+    }
+
+    public static bool IsUsingManagedServerSideEncryption(this CreateQueueRequest createQueueRequest)
+    {
+        return createQueueRequest.Attributes.TryGetValue(QueueAttributeName.SqsManagedSseEnabled, out var managedSseEnabled) 
+               && managedSseEnabled.Equals(true.ToString(), StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    public static bool IsUsingKMS(this CreateQueueRequest createQueueRequest)
+    {
+        return createQueueRequest.GetRedrivePolicy() is not null;
     }
 }

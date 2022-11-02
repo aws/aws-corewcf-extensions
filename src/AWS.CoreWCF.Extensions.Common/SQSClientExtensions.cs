@@ -1,4 +1,9 @@
-﻿using Amazon.Runtime;
+﻿using Amazon.Extensions.NETCore.Setup;
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
+using Amazon.Runtime;
+using Amazon.SecurityToken;
+using Amazon.SecurityToken.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
@@ -78,7 +83,11 @@ public static class SQSClientExtensions
         return attributesResponse.QueueARN;
     }
 
-    public static IAmazonSQS EnsureSQSQueue(this IAmazonSQS sqsClient, CreateQueueRequest createQueueRequest)
+    public static IAmazonSQS EnsureSQSQueue(
+        this IAmazonSQS sqsClient,
+        AWSOptions awsOptions,
+        CreateQueueRequest createQueueRequest,
+        IEnumerable<string>? accountIdsToAllow = null)
     {
         var queueName = createQueueRequest.QueueName;
         try
@@ -90,7 +99,8 @@ public static class SQSClientExtensions
         {
             if (e.Message.Contains("queue does not exist"))
             {
-                var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequest);
+                var createQueueRequestWithKms = EnsureKMSKey(createQueueRequest, awsOptions, accountIdsToAllow);
+                var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequestWithKms);
                 var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
                 response.Validate();
 
@@ -126,6 +136,51 @@ public static class SQSClientExtensions
         response.Validate();
 
         return sqsClient;
+    }
+
+    private static CreateQueueRequest EnsureKMSKey(
+        CreateQueueRequest createQueueRequest, 
+        AWSOptions awsOptions, 
+        IEnumerable<string>? accountIdsToAllow = null)
+    {
+        if (createQueueRequest.IsUsingManagedServerSideEncryption())
+        {
+            return createQueueRequest;
+        }
+
+        if (createQueueRequest.IsUsingKMS())
+        {
+            if (createQueueRequest.Attributes.TryGetValue(QueueAttributeName.KmsMasterKeyId, out var kmsMasterKeyId)
+                && !string.IsNullOrEmpty(kmsMasterKeyId))
+            {
+                // KMS key provided, do nothing
+                return createQueueRequest;
+            }
+
+            // Create clients required to create a KMS key
+            var kmsClient = new AmazonKeyManagementServiceClient(CredentialsHelper.GetCredentials(awsOptions));
+            var stsClient = new AmazonSecurityTokenServiceClient(CredentialsHelper.GetCredentials(awsOptions));
+
+            // Get AccountId of current user
+            var accountId = stsClient.GetCallerIdentityAsync(new GetCallerIdentityRequest()).Result.Account;
+
+            // Create policy for KMS key
+            var createKeyRequest = new CreateKeyRequest().WithBasicPolicy(accountId, accountIdsToAllow);
+
+            // Create KMS key
+            var createKeyResponse = kmsClient.CreateKeyAsync(createKeyRequest).Result;
+            createKeyResponse.Validate();
+            kmsMasterKeyId = createKeyResponse.KeyMetadata.KeyId;
+
+            // Add ID of new KMS Key to the queue request object
+            createQueueRequest.Attributes[QueueAttributeName.KmsMasterKeyId] = kmsMasterKeyId;
+
+            // Return updated queue request object
+            return createQueueRequest;
+        }
+
+        // Not using any encryption, do nothing
+        return createQueueRequest;
     }
 
     private static CreateQueueRequest EnsureDeadLetterQueue(this IAmazonSQS sqsClient, CreateQueueRequest createQueueRequest)
