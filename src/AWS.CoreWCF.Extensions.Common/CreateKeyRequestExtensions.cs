@@ -1,7 +1,6 @@
 ﻿using Amazon.KeyManagementService.Model;
-using AWS.CoreWCF.Extensions.Common;
 
-namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
+namespace AWS.CoreWCF.Extensions.Common;
 
 public static class CreateKeyRequestExtensions
 {

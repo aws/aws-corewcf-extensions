@@ -6,7 +6,6 @@ using Amazon.SecurityToken;
 using Amazon.SecurityToken.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using AWS.CoreWCF.Extensions.SQS.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 

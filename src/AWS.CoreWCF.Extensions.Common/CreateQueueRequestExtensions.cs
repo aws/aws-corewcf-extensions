@@ -1,17 +1,20 @@
-﻿using Amazon.Runtime;
-using Amazon.SQS.Model;
+﻿using Amazon.SQS.Model;
 using Amazon.SQS;
-using AWS.CoreWCF.Extensions.Common;
 using Newtonsoft.Json;
 
-namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
+namespace AWS.CoreWCF.Extensions.Common;
 
 public static class CreateQueueRequestExtensions
 {
+    private const string DefaultSQSTag = "CoreWCFExtensionsSQS";
     public static CreateQueueRequest SetDefaultValues(this CreateQueueRequest request, string? queueName = null)
     {
         request.QueueName = queueName ?? request.QueueName;
         request.Attributes = GetDefaultAttributeValues();
+        request.Tags = new Dictionary<string, string>
+        {
+            { DefaultSQSTag, DefaultSQSTag}
+        };
         return request;
     }
 
@@ -76,6 +79,7 @@ public static class CreateQueueRequestExtensions
     private const int DefaultDelayInSeconds = 0;
     private const int DefaultReceiveMessageWaitTimeSeconds = 0;
     private const int DefaultVisibilityTimeoutInSeconds = 30;
+    private const int DefaultKmsDataKeyReusePeriodInSeconds = 300;  // 5 minutes
     private static Dictionary<string, string> GetDefaultAttributeValues()
     {
         var defaultAttributes = new Dictionary<string, string>
@@ -85,7 +89,8 @@ public static class CreateQueueRequestExtensions
             { QueueAttributeName.MessageRetentionPeriod, MaxSQSMessageRetentionPeriodInSeconds.ToString() },
             { QueueAttributeName.ReceiveMessageWaitTimeSeconds, DefaultReceiveMessageWaitTimeSeconds.ToString() },
             { QueueAttributeName.VisibilityTimeout, DefaultVisibilityTimeoutInSeconds.ToString() },
-            { QueueAttributeName.SqsManagedSseEnabled, true.ToString() }
+            { QueueAttributeName.KmsDataKeyReusePeriodSeconds, DefaultKmsDataKeyReusePeriodInSeconds.ToString() },
+            { QueueAttributeName.SqsManagedSseEnabled, false.ToString() }
         };
         return defaultAttributes;
     }
