@@ -19,8 +19,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj" />
-    <ProjectReference Include="..\..\..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
+    <ProjectReference Include="..\..\..\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj" />
+    <ProjectReference Include="..\..\..\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj" />
     <ProjectReference Include="..\AWS.CoreWCF.Extensions.Common\AWS.CoreWCF.Extensions.Common.csproj" />
   </ItemGroup>
 

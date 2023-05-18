@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.Extensions.IntegrationT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Extensions", "src\AWS.CoreWCF.Extensions\AWS.CoreWCF.Extensions.csproj", "{EC50B358-D8FC-45F9-9AAD-A87C4EF76A5A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Queue", "..\birojnayak\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj", "{4D131802-EDF5-40CE-A1BD-BB0B3162ABF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Queue", "..\CoreWCF\src\CoreWCF.Queue\src\CoreWCF.Queue.csproj", "{4D131802-EDF5-40CE-A1BD-BB0B3162ABF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.RabbitMQ", "..\birojnayak\CoreWCF\src\CoreWCF.RabbitMQ\src\CoreWCF.RabbitMQ.csproj", "{19498445-02AF-4990-A660-A677B472E4E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.RabbitMQ", "..\CoreWCF\src\CoreWCF.RabbitMQ\src\CoreWCF.RabbitMQ.csproj", "{19498445-02AF-4990-A660-A677B472E4E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Primitives", "..\birojnayak\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj", "{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreWCF.Primitives", "..\CoreWCF\src\CoreWCF.Primitives\src\CoreWCF.Primitives.csproj", "{563026D4-07A1-4EEB-9DDF-38BEF1DC2AEE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{0504CCDB-7629-413F-BE27-31FC441DD585}"
 EndProject
