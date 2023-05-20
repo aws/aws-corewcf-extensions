@@ -3,7 +3,6 @@ using CoreWCF.Channels;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common;
 using CoreWCF.Queue.Common.Configuration;
-using CoreWCF.Queue.CoreWCF.Queue;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
