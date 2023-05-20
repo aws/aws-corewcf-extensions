@@ -22,7 +22,7 @@ public class ClientAndServerIntegrationTests
     {
         var clientService = _clientAndServerFixture.Channel;
         var sqsClient = _clientAndServerFixture.SqsClient;
-        var queueName = _clientAndServerFixture.GetQueueName();
+        var queueName = ClientAndServerFixture.QueueWithDefaultSettings;
 
         var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);
         LoggingService.InitializeTestCase(testCaseName);

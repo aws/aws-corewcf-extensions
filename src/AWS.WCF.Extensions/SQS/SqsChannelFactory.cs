@@ -9,8 +9,8 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
     private MessageEncoderFactory _messageEncoderFactory;
     private AwsSqsTransportBindingElement _bindingElement;
 
-internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, BindingContext context)
-    : base(context.Binding)
+    internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, BindingContext context)
+        : base(context.Binding)
     {
         _bindingElement = bindingElement;
         _bufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);
@@ -22,7 +22,8 @@ internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, Binding
         {
             throw new InvalidOperationException("More than one MessageEncodingBindingElement was found in the BindingParameters of the BindingContext");
         }
-        else if (messageEncoderBindingElements.Count() == 1)
+        
+        if (messageEncoderBindingElements.Count() == 1)
         {
             _messageEncoderFactory = messageEncoderBindingElements.First().CreateMessageEncoderFactory();
         }

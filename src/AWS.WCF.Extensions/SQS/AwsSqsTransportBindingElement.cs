@@ -17,7 +17,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     /// Creates a new instance of the AwsSqsTransportBindingElement class
     /// </summary>
     /// <param name="sqsClient">Client used for accessing the queue</param>
-    /// <param name="queueUrl">Url of the queue</param>
+    /// <param name="queueName">Name of the queue</param>
     /// <param name="maxMessageSize">The maximum message size in bytes for messages in the queue</param>
     /// <param name="maxBufferPoolSize">The maximum buffer pool size</param>
     public AwsSqsTransportBindingElement(
@@ -49,7 +49,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     {
         if (context == null)
         {
-            throw new ArgumentNullException("context");
+            throw new ArgumentNullException(nameof(context));
         }
 
         return context.GetInnerProperty<T>();
@@ -59,7 +59,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     {
         if (context == null)
         {
-            throw new ArgumentNullException("context");
+            throw new ArgumentNullException(nameof(context));
         }
 
         return (IChannelFactory<TChannel>)(object)new SqsChannelFactory(this, context);

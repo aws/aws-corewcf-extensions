@@ -32,35 +32,40 @@ public class ClientAndServerCollectionFixture : ICollectionFixture<ClientAndServ
 public class ClientAndServerFixture : IDisposable
 {
     private const string AwsKey = "AWS";
-    private const string AccessKeyEnvVariable = "AWS_ACCESS_KEY_ID";
-    private const string SecretKeyEnvVariable = "AWS_SECRET_ACCESS_KEY";
-    private const string TestQueueNameEnvVariable = "TEST_QUEUE_NAME";
+    private const string ProfileEnvVariable = "PROFILE";
+    //private const string AccessKeyEnvVariable = "AWS_ACCESS_KEY_ID";
+    //private const string SecretKeyEnvVariable = "AWS_SECRET_ACCESS_KEY";
+    //private const string TestQueueNameEnvVariable = "TEST_QUEUE_NAME";
     private const string SuccessTopicArnEnvVariable = "SUCCESS_TOPIC_ARN";
     private const string FailureTopicArnEnvVariable = "FAILURE_TOPIC_ARN";
 
     private ChannelFactory<ILoggingService> _factory;
 
-    public static string AccessKey { get; set; } = string.Empty;
-    public static string SecretKey { get; set; } = string.Empty;
-    public static string QueueName { get; set; } = string.Empty;
+    public static string Profile { get; set; } = string.Empty;
+    //public static string AccessKey { get; set; } = string.Empty;
+    //public static string SecretKey { get; set; } = string.Empty;
+    //public static string QueueName { get; set; } = string.Empty;
     public static string SuccessTopicArn { get; set; } = string.Empty;
     public static string FailureTopicArn { get; set; } = string.Empty;
+    public const string QueueWithDefaultSettings = "CoreWCFExtensionsDefaultSettingsQueue";
+    public const string FifoQueueName = "CoreWCFExtensionsTest.fifo";
+
     public IWebHost Host { get; private set; }
     public ILoggingService Channel { get; private set; }
-    public IAmazonSQS SqsClient { get; private set; }
+    public IAmazonSQS SqsClient { get; }
 
     public ClientAndServerFixture()
     {
         ReadTestEnvironmentSettingsFromFile(Path.Combine("SQS", "appsettings.test.json"));
+        SqsClient = new AmazonSQSClient(CredentialsHelper.GetCredentials(
+            new AWSOptions
+            {
+                Profile = Profile
+            }));
+
         CreateAndStartHost();
         CreateAndOpenClientChannel();
         //EnsureQueueIsEmpty();
-    }
-
-    private void EnsureQueueIsEmpty()
-    {
-        //var response = SqsClient.PurgeQueueAsync(QueueUrl).Result;
-        //response.Validate();
     }
 
     public void Dispose()
@@ -71,6 +76,12 @@ public class ClientAndServerFixture : IDisposable
         }
     }
 
+    private void EnsureQueueIsEmpty()
+    {
+        //var response = SqsClient.PurgeQueueAsync(QueueUrl).Result;
+        //response.Validate();
+    }
+
     private void CreateAndStartHost()
     {
         Host = ServiceHelper.CreateServiceHost<Startup>().Build();
@@ -79,27 +90,11 @@ public class ClientAndServerFixture : IDisposable
 
     private void CreateAndOpenClientChannel()
     {
-        SqsClient = GetSqsClient();
-        var sqsBinding = new WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueName);
+        var sqsBinding = new WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueWithDefaultSettings);
         var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
         _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
         Channel = _factory.CreateChannel();
         ((System.ServiceModel.Channels.IChannel)Channel).Open();
-    }
-
-    public static AWSCredentials GetCredentials()
-    {
-        return new BasicAWSCredentials(AccessKey, SecretKey);
-    }
-
-    public IAmazonSQS GetSqsClient()
-    {
-        return new AmazonSQSClient(GetCredentials());
-    }
-
-    public string GetQueueName()
-    {
-        return QueueName;
     }
 
     private void ReadTestEnvironmentSettingsFromFile(string settingsFilePath)
@@ -108,9 +103,7 @@ public class ClientAndServerFixture : IDisposable
         var appSettingsDictionary = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
 
         var settingsDict = appSettingsDictionary[AwsKey];
-        AccessKey = settingsDict[AccessKeyEnvVariable];
-        SecretKey = settingsDict[SecretKeyEnvVariable];
-        QueueName = settingsDict[TestQueueNameEnvVariable];
+        Profile = settingsDict[ProfileEnvVariable];
         SuccessTopicArn = settingsDict[SuccessTopicArnEnvVariable];
         FailureTopicArn = settingsDict[FailureTopicArnEnvVariable];
     }
@@ -127,61 +120,43 @@ public class ClientAndServerFixture : IDisposable
                 builder.AddConsole();
             });
 #endif
-            //services.AddDefaultAWSOptions(new AWSOptions
-            //{
-            //    Credentials = GetCredentials()
-            //});
-            //services.AddAWSService<IAmazonSQS>();
 
-            services.AddSQSClient(QueueName, 
-                GetCredentials(),
-                (sqsClient, queueName) =>
+            services.AddSQSClient(QueueWithDefaultSettings,
+                (awsOptions) =>
                 {
-                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
-                        .SetDefaultValues()
-                        .WithFIFO()
-                        .WithManagedServerSideEncryption());
-                }
-            );
-
-            services.AddSQSClient("newQueue1.fifo",
-                awsOptions =>
-                {
-                    awsOptions.Credentials = GetCredentials();
+                    awsOptions.Profile = Profile;
                 },
-                (sqsClient, queueName) =>
+                (sqsClient, awsOptions, queueName) =>
                 {
-                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
-                        .SetDefaultValues()
-                        .WithFIFO()
-                        .WithDeadLetterQueue()
-                        .WithManagedServerSideEncryption())
-                        .WithBasicPolicy(queueName);
+                    sqsClient.EnsureSQSQueue(awsOptions,
+                        new CreateQueueRequest(queueName)
+                            .SetDefaultValues());
                 }
             );
 
-            services.AddSQSClient("newQueue2.fifo",
-                awsOptions =>
+            services.AddSQSClient(FifoQueueName,
+                (awsOptions) =>
                 {
-                    awsOptions.Credentials = GetCredentials();
+                    awsOptions.Profile = Profile;
                 },
-                (sqsClient, queueName) =>
+                (sqsClient, awsOptions, queueName) =>
                 {
-                    sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName)
-                        .SetDefaultValues()
-                        .WithFIFO()
-                        .WithDeadLetterQueue()
-                        .WithManagedServerSideEncryption());
+                    sqsClient.EnsureSQSQueue(awsOptions,
+                        new CreateQueueRequest(queueName)
+                            .SetDefaultValues()
+                            .WithFIFO()
+                            .WithManagedServerSideEncryption())
+                    .WithBasicPolicy(queueName);
                 }
             );
-
+            
             services.AddAWSService<IAmazonSimpleNotificationService>();
             services.AddQueueTransport();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            var queueName = QueueName;
+            var queueName = QueueWithDefaultSettings;
             var concurrencyLevel = 1;
             var successTopicArn = SuccessTopicArn;
             var failureTopicArn = FailureTopicArn;
