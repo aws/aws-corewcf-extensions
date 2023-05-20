@@ -23,6 +23,8 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     /// </summary>
     public IDispatchCallbacksCollection DispatchCallbacksCollection { get; set; }
 
+    public override int ConcurrencyLevel { get; } = 1;
+
     /// <summary>
     /// Creates a new instance of the AwsSqsTransportBindingElement class
     /// </summary>
