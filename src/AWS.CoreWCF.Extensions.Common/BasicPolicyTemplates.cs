@@ -4,7 +4,8 @@ public class BasicPolicyTemplates
 {
     private const string AccountIdPlaceholder = "ACCOUNT_ID_PLACEHOLDER";
     private const string SQSArnPlaceholder = "SQS_ARN_PLACEHOLDER";
-    public const string BasicSQSPolicyTemplate = $@"{{
+    public const string BasicSQSPolicyTemplate =
+        $@"{{
   ""Version"": ""2008-10-17"",
   ""Id"": ""__default_policy_ID"",
   ""Statement"": [
@@ -29,7 +30,8 @@ public class BasicPolicyTemplates
   ]
 }}";
 
-    public const string BasicKMSPolicyTemplate = $@"{{
+    public const string BasicKMSPolicyTemplate =
+        $@"{{
   ""Version"": ""2008-10-17"",
   ""Id"": ""__default_policy_ID"",
   ""Statement"": [
@@ -56,9 +58,7 @@ public class BasicPolicyTemplates
     public static string GetBasicSQSPolicy(string queueArn)
     {
         var accountId = GetAccountIdFromQueueArn(queueArn);
-        return BasicSQSPolicyTemplate
-            .Replace(AccountIdPlaceholder, accountId)
-            .Replace(SQSArnPlaceholder, queueArn);
+        return BasicSQSPolicyTemplate.Replace(AccountIdPlaceholder, accountId).Replace(SQSArnPlaceholder, queueArn);
     }
 
     private static string GetAccountIdFromQueueArn(string queueArn)
@@ -75,7 +75,6 @@ public class BasicPolicyTemplates
         var accountIdStrings = accountIdsToAllow.Select(id => @$"""{id}""");
         var joinedAccountIdsToAllow = string.Join(", ", accountIdStrings);
 
-        return BasicKMSPolicyTemplate
-            .Replace(AccountIdPlaceholder, joinedAccountIdsToAllow);
+        return BasicKMSPolicyTemplate.Replace(AccountIdPlaceholder, joinedAccountIdsToAllow);
     }
 }

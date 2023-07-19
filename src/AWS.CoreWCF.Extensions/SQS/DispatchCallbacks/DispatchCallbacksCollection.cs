@@ -15,7 +15,8 @@ public class DispatchCallbacksCollection : IDispatchCallbacksCollection
 
     public DispatchCallbacksCollection(
         Func<IServiceProvider, QueueMessageContext, Task> notificationFuncForSuccessfulDispatch,
-        Func<IServiceProvider, QueueMessageContext, Task> notificationFuncForFailedDispatch)
+        Func<IServiceProvider, QueueMessageContext, Task> notificationFuncForFailedDispatch
+    )
     {
         NotificationDelegateForSuccessfulDispatch = new NotificationDelegate(notificationFuncForSuccessfulDispatch);
         NotificationDelegateForFailedDispatch = new NotificationDelegate(notificationFuncForFailedDispatch);
@@ -23,7 +24,8 @@ public class DispatchCallbacksCollection : IDispatchCallbacksCollection
 
     public DispatchCallbacksCollection(
         NotificationDelegate delegateForSuccessfulDispatch,
-        NotificationDelegate delegateForFailedDispatch)
+        NotificationDelegate delegateForFailedDispatch
+    )
     {
         NotificationDelegateForSuccessfulDispatch = delegateForSuccessfulDispatch;
         NotificationDelegateForFailedDispatch = delegateForFailedDispatch;
@@ -32,12 +34,17 @@ public class DispatchCallbacksCollection : IDispatchCallbacksCollection
 
 public class DispatchCallbacksCollectionFactory
 {
-    public static IDispatchCallbacksCollection GetDefaultCallbacksCollectionWithSns(string successTopicArn, string failureTopicArn)
+    public static IDispatchCallbacksCollection GetDefaultCallbacksCollectionWithSns(
+        string successTopicArn,
+        string failureTopicArn
+    )
     {
         return new DispatchCallbacksCollection(
             DispatchCallbackFactory.GetDefaultSuccessNotificationCallbackWithSns(successTopicArn),
-            DispatchCallbackFactory.GetDefaultFailureNotificationCallbackWithSns(failureTopicArn));
+            DispatchCallbackFactory.GetDefaultFailureNotificationCallbackWithSns(failureTopicArn)
+        );
     }
+
     public static IDispatchCallbacksCollection GetNullCallbacksCollection()
     {
         return new DispatchCallbacksCollection();

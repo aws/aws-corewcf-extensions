@@ -29,7 +29,8 @@ internal class AwsSqsTransport : IQueueTransport
         string queueName,
         Encoding encoding,
         IDispatchCallbacksCollection dispatchCallbacksCollection,
-        int concurrencyLevel = 1)
+        int concurrencyLevel = 1
+    )
     {
         _services = services;
         _baseAddress = serviceDispatcher.BaseAddress;
@@ -67,14 +68,17 @@ internal class AwsSqsTransport : IQueueTransport
         };
         return context;
     }
-    
-    private async Task MessageResultCallback(QueueDispatchResult dispatchResult, QueueMessageContext queueMessageContext)
+
+    private async Task MessageResultCallback(
+        QueueDispatchResult dispatchResult,
+        QueueMessageContext queueMessageContext
+    )
     {
         if (dispatchResult == QueueDispatchResult.Processed)
         {
             var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForSuccessfulDispatch;
             await notificationCallback.Invoke(_services, queueMessageContext);
-            
+
             var receiptHandle = (queueMessageContext as AwsSqsMessageContext)?.MessageReceiptHandle;
             await _sqsMessageProvider.DeleteSqsMessageAsync(_queueName, receiptHandle);
         }

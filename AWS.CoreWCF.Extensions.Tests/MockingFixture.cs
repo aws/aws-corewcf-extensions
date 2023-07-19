@@ -29,8 +29,5 @@ public class MockingFixture
 
         //mock.Verify(f => f.DeleteVendorBrief(brief));
         //mock.Verify(f => f.SaveChanges());
-
-
-
     }
 }

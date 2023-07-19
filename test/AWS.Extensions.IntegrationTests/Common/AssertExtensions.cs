@@ -6,16 +6,18 @@ namespace AWS.Extensions.IntegrationTests.Common;
 
 public class SqsAssert
 {
-    public static async Task QueueIsEmpty(IAmazonSQS sqsClient, string queueName, int maxRetries = 3, int retryDelayInSeconds = 1)
+    public static async Task QueueIsEmpty(
+        IAmazonSQS sqsClient,
+        string queueName,
+        int maxRetries = 3,
+        int retryDelayInSeconds = 1
+    )
     {
         var queueUrlResponse = await sqsClient.GetQueueUrlAsync(queueName);
         var queueUrl = queueUrlResponse.QueueUrl;
 
         var queueIsEmpty = false;
-        var attributesList = new List<string>
-        {
-            "All"
-        };
+        var attributesList = new List<string> { "All" };
 
         for (var attempt = 0; attempt < maxRetries; attempt++)
         {

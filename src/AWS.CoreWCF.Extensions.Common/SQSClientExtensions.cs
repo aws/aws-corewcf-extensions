@@ -27,14 +27,14 @@ public static class SQSClientExtensions
         }
     }
 
-    public static async Task<IEnumerable<Message>> ReceiveMessagesAsync(this IAmazonSQS sqsClient, string queueUrl,
-        ILogger logger, int maxMessagesToReceive = 10)
+    public static async Task<IEnumerable<Message>> ReceiveMessagesAsync(
+        this IAmazonSQS sqsClient,
+        string queueUrl,
+        ILogger logger,
+        int maxMessagesToReceive = 10
+    )
     {
-        var request = new ReceiveMessageRequest
-        {
-            QueueUrl = queueUrl,
-            MaxNumberOfMessages = maxMessagesToReceive
-        };
+        var request = new ReceiveMessageRequest { QueueUrl = queueUrl, MaxNumberOfMessages = maxMessagesToReceive };
         try
         {
             var receiveMessageResponse = await sqsClient.ReceiveMessageAsync(request);
@@ -44,20 +44,22 @@ public static class SQSClientExtensions
         }
         catch (Exception e)
         {
-            logger.LogError(e,
-                $"Error while attempting to retrieve messages from {queueUrl}. Returning empty collection.");
+            logger.LogError(
+                e,
+                $"Error while attempting to retrieve messages from {queueUrl}. Returning empty collection."
+            );
             return new List<Message>();
         }
     }
 
-    public static async Task DeleteMessageAsync(this IAmazonSQS sqsClient, string queueUrl, string receiptHandle,
-        ILogger logger)
+    public static async Task DeleteMessageAsync(
+        this IAmazonSQS sqsClient,
+        string queueUrl,
+        string receiptHandle,
+        ILogger logger
+    )
     {
-        var deleteMessageRequest = new DeleteMessageRequest
-        {
-            QueueUrl = queueUrl,
-            ReceiptHandle = receiptHandle
-        };
+        var deleteMessageRequest = new DeleteMessageRequest { QueueUrl = queueUrl, ReceiptHandle = receiptHandle };
         try
         {
             var deleteMessageResponse = await sqsClient.DeleteMessageAsync(deleteMessageRequest);
@@ -65,19 +67,23 @@ public static class SQSClientExtensions
         }
         catch (Exception e)
         {
-            logger.LogError(e,
-                $"Error while attempting to delete message from {queueUrl}. Receipt handle: {receiptHandle}");
+            logger.LogError(
+                e,
+                $"Error while attempting to delete message from {queueUrl}. Receipt handle: {receiptHandle}"
+            );
         }
     }
 
     public static async Task<string> GetQueueArnAsync(this IAmazonSQS sqsClient, string queueUrl)
     {
         const string arnAttribute = "QueueArn";
-        var attributesResponse = await sqsClient.GetQueueAttributesAsync(new GetQueueAttributesRequest
-        {
-            QueueUrl = queueUrl,
-            AttributeNames = new List<string> { arnAttribute }
-        });
+        var attributesResponse = await sqsClient.GetQueueAttributesAsync(
+            new GetQueueAttributesRequest
+            {
+                QueueUrl = queueUrl,
+                AttributeNames = new List<string> { arnAttribute }
+            }
+        );
         attributesResponse.Validate();
         return attributesResponse.QueueARN;
     }
@@ -86,7 +92,8 @@ public static class SQSClientExtensions
         this IAmazonSQS sqsClient,
         AWSOptions awsOptions,
         CreateQueueRequest createQueueRequest,
-        IEnumerable<string>? accountIdsToAllow = null)
+        IEnumerable<string>? accountIdsToAllow = null
+    )
     {
         var queueName = createQueueRequest.QueueName;
         try
@@ -126,10 +133,7 @@ public static class SQSClientExtensions
         var request = new SetQueueAttributesRequest
         {
             QueueUrl = queueUrl,
-            Attributes = new Dictionary<string, string>
-            {
-                { QueueAttributeName.Policy, policy }
-            }
+            Attributes = new Dictionary<string, string> { { QueueAttributeName.Policy, policy } }
         };
         var response = sqsClient.SetQueueAttributesAsync(request).Result;
         response.Validate();
@@ -138,9 +142,10 @@ public static class SQSClientExtensions
     }
 
     private static CreateQueueRequest EnsureKMSKey(
-        CreateQueueRequest createQueueRequest, 
-        AWSOptions awsOptions, 
-        IEnumerable<string>? accountIdsToAllow = null)
+        CreateQueueRequest createQueueRequest,
+        AWSOptions awsOptions,
+        IEnumerable<string>? accountIdsToAllow = null
+    )
     {
         if (createQueueRequest.IsUsingManagedServerSideEncryption())
         {
@@ -149,8 +154,10 @@ public static class SQSClientExtensions
 
         if (createQueueRequest.IsUsingKMS())
         {
-            if (createQueueRequest.Attributes.TryGetValue(QueueAttributeName.KmsMasterKeyId, out var kmsMasterKeyId)
-                && !string.IsNullOrEmpty(kmsMasterKeyId))
+            if (
+                createQueueRequest.Attributes.TryGetValue(QueueAttributeName.KmsMasterKeyId, out var kmsMasterKeyId)
+                && !string.IsNullOrEmpty(kmsMasterKeyId)
+            )
             {
                 // KMS key provided, do nothing
                 return createQueueRequest;
@@ -182,7 +189,10 @@ public static class SQSClientExtensions
         return createQueueRequest;
     }
 
-    private static CreateQueueRequest EnsureDeadLetterQueue(this IAmazonSQS sqsClient, CreateQueueRequest createQueueRequest)
+    private static CreateQueueRequest EnsureDeadLetterQueue(
+        this IAmazonSQS sqsClient,
+        CreateQueueRequest createQueueRequest
+    )
     {
         if (!createQueueRequest.IsUsingDeadLetterQueue())
         {
@@ -191,23 +201,21 @@ public static class SQSClientExtensions
         }
 
         var redrivePolicy = createQueueRequest.GetRedrivePolicy();
-        if (redrivePolicy.TryGetValue("deadLetterTargetArn", out var deadLetterTargetArn)
-            && !string.IsNullOrEmpty(deadLetterTargetArn))
+        if (
+            redrivePolicy.TryGetValue("deadLetterTargetArn", out var deadLetterTargetArn)
+            && !string.IsNullOrEmpty(deadLetterTargetArn)
+        )
         {
             // Dead letter queue ARN was provided so do nothing
             return createQueueRequest;
         }
 
-        // Create request to create DLQ 
+        // Create request to create DLQ
         var dlqAttributes = new Dictionary<string, string>(createQueueRequest.Attributes);
         dlqAttributes.Remove(QueueAttributeName.RedrivePolicy);
         var dlqName = GenerateDlqNameFromCreateQueue(createQueueRequest);
 
-        var createDlqRequest = new CreateQueueRequest
-        {
-            QueueName = dlqName,
-            Attributes = dlqAttributes
-        };
+        var createDlqRequest = new CreateQueueRequest { QueueName = dlqName, Attributes = dlqAttributes };
 
         // Create DLQ
         var createDlqResponse = sqsClient.CreateQueueAsync(createDlqRequest).Result;

@@ -6,11 +6,11 @@ namespace AWS.WCF.Extensions.SQS;
 public class AwsSqsTransportBindingElement : TransportBindingElement
 {
     public override string Scheme => SqsConstants.Scheme;
-    
+
     public IAmazonSQS SqsClient { get; set; }
 
     public string QueueName { get; set; }
-    
+
     public override long MaxReceivedMessageSize { get; set; }
 
     /// <summary>
@@ -24,7 +24,8 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
         IAmazonSQS sqsClient,
         string queueName,
         long maxMessageSize = SqsDefaults.MaxSendMessageSize,
-        long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize)
+        long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize
+    )
     {
         SqsClient = sqsClient;
         QueueName = queueName;

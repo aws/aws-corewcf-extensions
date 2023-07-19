@@ -42,7 +42,6 @@ public class Demo
         _host = ServiceHelper.CreateServiceHost<Startup>().Build();
         _host.Start();
 
-
         // Simple loop to send a message to the queue every second
         Console.WriteLine("Running the application...");
         var messageId = 1;
@@ -68,10 +67,9 @@ public class Demo
             services.AddServiceModelServices();
 
             // Setup AWS credentials + services
-            services.AddDefaultAWSOptions(new AWSOptions
-            {
-                Credentials = EnvironmentCollectionFixture.GetCredentials()
-            });
+            services.AddDefaultAWSOptions(
+                new AWSOptions { Credentials = EnvironmentCollectionFixture.GetCredentials() }
+            );
             services.AddAWSService<IAmazonSQS>();
             services.AddAWSService<IAmazonSimpleNotificationService>();
 
@@ -92,9 +90,13 @@ public class Demo
                     new AwsSqsBinding(
                         queueUrl,
                         concurrencyLevel,
-                        DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(successTopicArn, failureTopicArn)
+                        DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
+                            successTopicArn,
+                            failureTopicArn
+                        )
                     ),
-            "/BasicSqsService/ILoggingService.svc");
+                    "/BasicSqsService/ILoggingService.svc"
+                );
             });
         }
     }

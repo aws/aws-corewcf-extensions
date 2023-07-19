@@ -27,7 +27,7 @@ public class ClientAndServerIntegrationTests
         var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);
         LoggingService.InitializeTestCase(testCaseName);
         clientService.LogMessage(testCaseName);
-        
+
         Assert.True(LoggingService.LogResults[testCaseName].Wait(TimeSpan.FromSeconds(5)));
         await SqsAssert.QueueIsEmpty(sqsClient, queueName);
     }

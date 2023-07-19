@@ -17,13 +17,25 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     private SqsChannelFactory _parent;
     private IAmazonSQS _sqsClient;
 
-    internal SqsOutputChannel(SqsChannelFactory factory, IAmazonSQS sqsClient, EndpointAddress queueUrl, Uri via, MessageEncoder encoder)
+    internal SqsOutputChannel(
+        SqsChannelFactory factory,
+        IAmazonSQS sqsClient,
+        EndpointAddress queueUrl,
+        Uri via,
+        MessageEncoder encoder
+    )
         : base(factory)
     {
         if (!string.Equals(via.Scheme, SqsConstants.Scheme, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
-                "The scheme {0} specified in address is not supported.", via.Scheme), nameof(via));
+            throw new ArgumentException(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    "The scheme {0} specified in address is not supported.",
+                    via.Scheme
+                ),
+                nameof(via)
+            );
         }
 
         _parent = factory;
@@ -32,7 +44,7 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
         _encoder = encoder;
         _sqsClient = sqsClient;
     }
-    
+
     EndpointAddress IOutputChannel.RemoteAddress => _queueUrl;
 
     Uri IOutputChannel.Via => _via;
@@ -56,29 +68,26 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     /// <summary>
     /// Open the channel for use. We do not have any blocking work to perform so this is a no-op
     /// </summary>
-    protected override void OnOpen(TimeSpan timeout)
-    { }
+    protected override void OnOpen(TimeSpan timeout) { }
 
     protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
     {
         return Task.CompletedTask;
     }
 
-    protected override void OnEndOpen(IAsyncResult result)
-    { }
+    protected override void OnEndOpen(IAsyncResult result) { }
 
-    protected override void OnAbort()
-    { }
-    
-    protected override void OnClose(TimeSpan timeout)
-    { }
+    protected override void OnAbort() { }
 
-    protected override IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state) 
-    { return Task.CompletedTask; }
+    protected override void OnClose(TimeSpan timeout) { }
 
-    protected override void OnEndClose(IAsyncResult result)
-    { }
-    
+    protected override IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state)
+    {
+        return Task.CompletedTask;
+    }
+
+    protected override void OnEndClose(IAsyncResult result) { }
+
     /// <summary>
     /// Address the Message and serialize it into a byte array.
     /// </summary>
@@ -126,13 +135,16 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     {
         Send(message);
     }
-    
+
     public IAsyncResult BeginSend(Message message, AsyncCallback callback, object state)
-    { return Task.CompletedTask; }
+    {
+        return Task.CompletedTask;
+    }
 
     public IAsyncResult BeginSend(Message message, TimeSpan timeout, AsyncCallback callback, object state)
-    { return BeginSend(message, callback, state); }
+    {
+        return BeginSend(message, callback, state);
+    }
 
-    public void EndSend(IAsyncResult result)
-    { }
+    public void EndSend(IAsyncResult result) { }
 }

@@ -7,11 +7,12 @@ internal static class SqsConstants
     internal const string Scheme = "https";
 
     private static readonly MessageEncoderFactory _messageEncoderFactory;
+
     static SqsConstants()
     {
         _messageEncoderFactory = new TextMessageEncodingBindingElement().CreateMessageEncoderFactory();
     }
-    
+
     internal static MessageEncoderFactory DefaultMessageEncoderFactory => _messageEncoderFactory;
 }
 

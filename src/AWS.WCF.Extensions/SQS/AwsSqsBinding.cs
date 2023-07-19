@@ -24,9 +24,10 @@ public class AwsSqsBinding : Binding
 
     public AwsSqsBinding(
         IAmazonSQS sqsClient,
-        string queueName, 
-        long maxMessageSize = SqsDefaults.MaxSendMessageSize, 
-        long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize)
+        string queueName,
+        long maxMessageSize = SqsDefaults.MaxSendMessageSize,
+        long maxBufferPoolSize = SqsDefaults.MaxBufferPoolSize
+    )
     {
         QueueUrl = sqsClient.GetQueueUrlAsync(queueName).Result.QueueUrl;
         Transport = new AwsSqsTransportBindingElement(sqsClient, QueueUrl, maxMessageSize, maxBufferPoolSize);

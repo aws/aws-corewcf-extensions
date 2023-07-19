@@ -15,14 +15,17 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
         _bindingElement = bindingElement;
         _bufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);
 
-        IEnumerable<MessageEncodingBindingElement> messageEncoderBindingElements
-            = context.BindingParameters.OfType<MessageEncodingBindingElement>().ToList();
+        IEnumerable<MessageEncodingBindingElement> messageEncoderBindingElements = context.BindingParameters
+            .OfType<MessageEncodingBindingElement>()
+            .ToList();
 
         if (messageEncoderBindingElements.Count() > 1)
         {
-            throw new InvalidOperationException("More than one MessageEncodingBindingElement was found in the BindingParameters of the BindingContext");
+            throw new InvalidOperationException(
+                "More than one MessageEncodingBindingElement was found in the BindingParameters of the BindingContext"
+            );
         }
-        
+
         if (messageEncoderBindingElements.Count() == 1)
         {
             _messageEncoderFactory = messageEncoderBindingElements.First().CreateMessageEncoderFactory();
@@ -53,18 +56,14 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
         return base.GetProperty<T>();
     }
 
-    protected override void OnOpen(TimeSpan timeout)
-    {
-    }
+    protected override void OnOpen(TimeSpan timeout) { }
 
     protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
     {
         return Task.CompletedTask;
     }
 
-    protected override void OnEndOpen(IAsyncResult result)
-    {
-    }
+    protected override void OnEndOpen(IAsyncResult result) { }
 
     /// <summary>
     /// Create a new Udp Channel. Supports IOutputChannel.

@@ -59,7 +59,7 @@
 //        ReadTestEnvironmentSettingsFromFile(Path.Combine("SQS", "appsettings.test.json"));
 //        SqsClient = new AmazonSQSClient(
 //            CredentialsHelper.GetCredentials(
-//                new AWSOptions 
+//                new AWSOptions
 //                {
 //                    Profile = Profile
 //                }));

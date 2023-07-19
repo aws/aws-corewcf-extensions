@@ -35,7 +35,8 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
         string queueName,
         int concurrencyLevel,
         IDispatchCallbacksCollection dispatchCallbacksCollection,
-        long maxMessageSize = AwsSqsBinding.DefaultMaxMessageSize)
+        long maxMessageSize = AwsSqsBinding.DefaultMaxMessageSize
+    )
     {
         QueueName = queueName;
         ConcurrencyLevel = concurrencyLevel;
@@ -74,6 +75,7 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
             QueueName,
             messageEncoding,
             DispatchCallbacksCollection,
-            ConcurrencyLevel);
+            ConcurrencyLevel
+        );
     }
 }

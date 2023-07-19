@@ -23,7 +23,7 @@ public class SQSMessageProvider
         _queueMessageCache = new ConcurrentDictionary<string, ConcurrentQueue<Message>>();
         _cacheMutexes = new ConcurrentDictionary<string, SemaphoreSlim>();
         _namedSQSClients = new ConcurrentDictionary<string, NamedSQSClient>();
-        
+
         foreach (var namedSQSClient in namedSQSClients)
         {
             var queueName = namedSQSClient.QueueName;

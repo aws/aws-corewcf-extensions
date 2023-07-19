@@ -17,11 +17,9 @@ public interface ILoggingService
     [System.ServiceModel.OperationContract(
         Name = "LogMessage",
         Action = Constants.OPERATION_BASE + "LogMessage",
-        IsOneWay = true)]
-    [OperationContract(
-        Name = "LogMessage",
-        Action = Constants.OPERATION_BASE + "LogMessage",
-        IsOneWay = true)]
+        IsOneWay = true
+    )]
+    [OperationContract(Name = "LogMessage", Action = Constants.OPERATION_BASE + "LogMessage", IsOneWay = true)]
     public void LogMessage(string toLog);
 }
 

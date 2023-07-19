@@ -4,7 +4,8 @@ namespace AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 
 public class MessageHelper
 {
-    private const string TestMessageTemplate = @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
+    private const string TestMessageTemplate =
+        @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
     <s:Header>
         <a:Action s:mustUnderstand=""1"">http://tempuri.org/{0}/{1}</a:Action>
         <VsDebuggerCausalityData xmlns=""http://schemas.microsoft.com/vstudio/diagnostics/servicemodelsink"">
@@ -17,8 +18,14 @@ public class MessageHelper
         </{1}>
     </s:Body>
 </s:Envelope>";
-    
-    public static async Task SendMessageToQueueAsync(string iServiceName, string actionName, string messageId, string queueUrl, AWSCredentials credentials)
+
+    public static async Task SendMessageToQueueAsync(
+        string iServiceName,
+        string actionName,
+        string messageId,
+        string queueUrl,
+        AWSCredentials credentials
+    )
     {
         var client = SdkClientHelper.GetSqsClientInstance(credentials);
         await client.SendMessageAsync(queueUrl, FormatTestMessage(iServiceName, actionName, messageId));
@@ -28,4 +35,4 @@ public class MessageHelper
     {
         return string.Format(TestMessageTemplate, iServiceName, actionName, messageId);
     }
-}   
+}

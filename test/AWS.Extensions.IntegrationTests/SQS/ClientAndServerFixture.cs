@@ -33,6 +33,7 @@ public class ClientAndServerFixture : IDisposable
 {
     private const string AwsKey = "AWS";
     private const string ProfileEnvVariable = "PROFILE";
+
     //private const string AccessKeyEnvVariable = "AWS_ACCESS_KEY_ID";
     //private const string SecretKeyEnvVariable = "AWS_SECRET_ACCESS_KEY";
     //private const string TestQueueNameEnvVariable = "TEST_QUEUE_NAME";
@@ -42,6 +43,7 @@ public class ClientAndServerFixture : IDisposable
     private ChannelFactory<ILoggingService> _factory;
 
     public static string Profile { get; set; } = string.Empty;
+
     //public static string AccessKey { get; set; } = string.Empty;
     //public static string SecretKey { get; set; } = string.Empty;
     //public static string QueueName { get; set; } = string.Empty;
@@ -57,11 +59,7 @@ public class ClientAndServerFixture : IDisposable
     public ClientAndServerFixture()
     {
         ReadTestEnvironmentSettingsFromFile(Path.Combine("SQS", "appsettings.test.json"));
-        SqsClient = new AmazonSQSClient(CredentialsHelper.GetCredentials(
-            new AWSOptions
-            {
-                Profile = Profile
-            }));
+        SqsClient = new AmazonSQSClient(CredentialsHelper.GetCredentials(new AWSOptions { Profile = Profile }));
 
         CreateAndStartHost();
         CreateAndOpenClientChannel();
@@ -121,35 +119,38 @@ public class ClientAndServerFixture : IDisposable
             });
 #endif
 
-            services.AddSQSClient(QueueWithDefaultSettings,
+            services.AddSQSClient(
+                QueueWithDefaultSettings,
                 (awsOptions) =>
                 {
                     awsOptions.Profile = Profile;
                 },
                 (sqsClient, awsOptions, queueName) =>
                 {
-                    sqsClient.EnsureSQSQueue(awsOptions,
-                        new CreateQueueRequest(queueName)
-                            .SetDefaultValues());
+                    sqsClient.EnsureSQSQueue(awsOptions, new CreateQueueRequest(queueName).SetDefaultValues());
                 }
             );
 
-            services.AddSQSClient(FifoQueueName,
+            services.AddSQSClient(
+                FifoQueueName,
                 (awsOptions) =>
                 {
                     awsOptions.Profile = Profile;
                 },
                 (sqsClient, awsOptions, queueName) =>
                 {
-                    sqsClient.EnsureSQSQueue(awsOptions,
-                        new CreateQueueRequest(queueName)
-                            .SetDefaultValues()
-                            .WithFIFO()
-                            .WithManagedServerSideEncryption())
-                    .WithBasicPolicy(queueName);
+                    sqsClient
+                        .EnsureSQSQueue(
+                            awsOptions,
+                            new CreateQueueRequest(queueName)
+                                .SetDefaultValues()
+                                .WithFIFO()
+                                .WithManagedServerSideEncryption()
+                        )
+                        .WithBasicPolicy(queueName);
                 }
             );
-            
+
             services.AddAWSService<IAmazonSimpleNotificationService>();
             services.AddQueueTransport();
         }
@@ -167,9 +168,13 @@ public class ClientAndServerFixture : IDisposable
                     new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding(
                         queueName,
                         concurrencyLevel,
-                        DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(successTopicArn, failureTopicArn)
+                        DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
+                            successTopicArn,
+                            failureTopicArn
+                        )
                     ),
-                    "/BasicSqsService/ILoggingService.svc");
+                    "/BasicSqsService/ILoggingService.svc"
+                );
             });
         }
     }

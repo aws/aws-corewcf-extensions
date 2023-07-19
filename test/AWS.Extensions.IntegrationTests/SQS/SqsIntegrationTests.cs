@@ -29,12 +29,12 @@
 //        LoggingService.InitializeTestCase(testCaseName);
 
 //        await MessageHelper.SendMessageToQueueAsync(
-//            nameof(ILoggingService), 
+//            nameof(ILoggingService),
 //            nameof(ILoggingService.LogMessage),
 //            testCaseName,
 //            queueUrl,
 //            credentials);
-            
+
 //        Assert.True(LoggingService.LogResults[testCaseName].Wait(TimeSpan.FromSeconds(5)));
 //        await SqsAssert.QueueIsEmpty(sqsClient, queueUrl);
 //    }

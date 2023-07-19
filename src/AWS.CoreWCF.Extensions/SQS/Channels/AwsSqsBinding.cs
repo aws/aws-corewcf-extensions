@@ -6,7 +6,7 @@ namespace AWS.CoreWCF.Extensions.SQS.Channels;
 public class AwsSqsBinding : Binding
 {
     private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
-    public const int DefaultMaxMessageSize = 262144;  // Max size for SQS message is 262144 (2^18)
+    public const int DefaultMaxMessageSize = 262144; // Max size for SQS message is 262144 (2^18)
 
     /// <summary>
     /// Gets the scheme used by the binding, https
@@ -45,7 +45,12 @@ public class AwsSqsBinding : Binding
     /// <param name="concurrencyLevel">Maximum number of workers polling the queue for messages</param>
     /// <param name="dispatchCallbacksCollection">Collection of callbacks to be called after message dispatch</param>
     /// <param name="maxMessageSize">The maximum message size in bytes for messages in the queue</param>
-    public AwsSqsBinding(string queueName, int concurrencyLevel, IDispatchCallbacksCollection dispatchCallbacksCollection, int maxMessageSize = DefaultMaxMessageSize)
+    public AwsSqsBinding(
+        string queueName,
+        int concurrencyLevel,
+        IDispatchCallbacksCollection dispatchCallbacksCollection,
+        int maxMessageSize = DefaultMaxMessageSize
+    )
     {
         QueueName = queueName;
         ConcurrencyLevel = concurrencyLevel;
@@ -65,7 +70,12 @@ public class AwsSqsBinding : Binding
 
     private void Initialize()
     {
-        Transport = new AwsSqsTransportBindingElement(QueueName, ConcurrencyLevel, _dispatchCallbacksCollection, MaxMessageSize);
+        Transport = new AwsSqsTransportBindingElement(
+            QueueName,
+            ConcurrencyLevel,
+            _dispatchCallbacksCollection,
+            MaxMessageSize
+        );
         Encoding = new TextMessageEncodingBindingElement();
         MaxMessageSize = DefaultMaxMessageSize;
     }
