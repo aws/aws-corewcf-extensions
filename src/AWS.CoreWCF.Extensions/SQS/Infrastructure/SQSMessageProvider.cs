@@ -33,7 +33,7 @@ public class SQSMessageProvider
         }
     }
 
-    public async Task<Message> ReceiveMessageAsync(string queueName)
+    public async Task<Message?> ReceiveMessageAsync(string queueName)
     {
         var cachedMessages = _queueMessageCache[queueName];
         var namedClient = _namedSQSClients[queueName];

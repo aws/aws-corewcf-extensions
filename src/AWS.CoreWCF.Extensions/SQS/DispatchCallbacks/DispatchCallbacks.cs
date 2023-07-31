@@ -13,7 +13,7 @@ public class DispatchCallbackFactory
 {
     public static NotificationDelegate GetNullCallback()
     {
-        async Task NullCallback(IServiceProvider services, QueueMessageContext context) { }
+        Task NullCallback(IServiceProvider services, QueueMessageContext context) => Task.CompletedTask;
 
         return NullCallback;
     }

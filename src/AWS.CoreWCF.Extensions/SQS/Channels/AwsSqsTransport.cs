@@ -17,11 +17,10 @@ internal class AwsSqsTransport : IQueueTransport
     private readonly Uri _baseAddress;
     private readonly string _queueName;
     private readonly Encoding _encoding;
-    private readonly int _concurrencyLevel;
     private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
     private readonly SQSMessageProvider _sqsMessageProvider;
 
-    public int ConcurrencyLevel => _concurrencyLevel;
+    public int ConcurrencyLevel { get; }
 
     public AwsSqsTransport(
         IServiceProvider services,
@@ -36,12 +35,12 @@ internal class AwsSqsTransport : IQueueTransport
         _baseAddress = serviceDispatcher.BaseAddress;
         _queueName = queueName;
         _encoding = encoding;
-        _concurrencyLevel = concurrencyLevel;
+        ConcurrencyLevel = concurrencyLevel;
         _dispatchCallbacksCollection = dispatchCallbacksCollection;
         _sqsMessageProvider = _services.GetRequiredService<SQSMessageProvider>();
     }
 
-    public async ValueTask<QueueMessageContext> ReceiveQueueMessageContextAsync(CancellationToken cancellationToken)
+    public async ValueTask<QueueMessageContext?> ReceiveQueueMessageContextAsync(CancellationToken cancellationToken)
     {
         var sqsMessage = await _sqsMessageProvider.ReceiveMessageAsync(_queueName);
 
@@ -58,35 +57,22 @@ internal class AwsSqsTransport : IQueueTransport
     {
         var reader = PipeReader.Create(sqsMessage.Body.ToStream(_encoding));
         var receiptHandle = sqsMessage.ReceiptHandle;
+
         var context = new AwsSqsMessageContext
         {
             QueueMessageReader = reader,
             LocalAddress = new EndpointAddress(_baseAddress),
-            Properties = new Dictionary<string, object>(),
-            DispatchResultHandler = MessageResultCallback,
             MessageReceiptHandle = receiptHandle
         };
+
+        context.ReceiveContext = new AwsSqsReceiveContext(
+            _services,
+            _dispatchCallbacksCollection,
+            _sqsMessageProvider,
+            _queueName,
+            context
+        );
+
         return context;
-    }
-
-    private async Task MessageResultCallback(
-        QueueDispatchResult dispatchResult,
-        QueueMessageContext queueMessageContext
-    )
-    {
-        if (dispatchResult == QueueDispatchResult.Processed)
-        {
-            var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForSuccessfulDispatch;
-            await notificationCallback.Invoke(_services, queueMessageContext);
-
-            var receiptHandle = (queueMessageContext as AwsSqsMessageContext)?.MessageReceiptHandle;
-            await _sqsMessageProvider.DeleteSqsMessageAsync(_queueName, receiptHandle);
-        }
-
-        if (dispatchResult == QueueDispatchResult.Failed)
-        {
-            var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForFailedDispatch;
-            await notificationCallback.Invoke(_services, queueMessageContext);
-        }
     }
 }

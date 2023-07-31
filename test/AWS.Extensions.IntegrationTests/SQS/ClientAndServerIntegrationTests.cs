@@ -9,7 +9,7 @@ namespace AWS.Extensions.IntegrationTests.SQS;
 public class ClientAndServerIntegrationTests
 {
     private readonly ITestOutputHelper _output;
-    private static ClientAndServerFixture _clientAndServerFixture;
+    private readonly ClientAndServerFixture _clientAndServerFixture;
 
     public ClientAndServerIntegrationTests(ITestOutputHelper output, ClientAndServerFixture clientAndServerFixture)
     {

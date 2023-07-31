@@ -4,5 +4,5 @@ namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
 public class AwsSqsMessageContext : QueueMessageContext
 {
-    public string? MessageReceiptHandle { get; set; }
+    public string MessageReceiptHandle { get; set; } = string.Empty;
 }

@@ -158,21 +158,23 @@ public class ClientAndServerFixture : IDisposable
         public void Configure(IApplicationBuilder app)
         {
             var queueName = QueueWithDefaultSettings;
-            var concurrencyLevel = 1;
+
             var successTopicArn = SuccessTopicArn;
             var failureTopicArn = FailureTopicArn;
+
             app.UseServiceModel(services =>
             {
                 services.AddService<LoggingService>();
                 services.AddServiceEndpoint<LoggingService, ILoggingService>(
-                    new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding(
-                        queueName,
-                        concurrencyLevel,
-                        DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
-                            successTopicArn,
-                            failureTopicArn
-                        )
-                    ),
+                    new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding
+                    {
+                        QueueName = queueName,
+                        DispatchCallbacksCollection =
+                            DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
+                                successTopicArn,
+                                failureTopicArn
+                            )
+                    },
                     "/BasicSqsService/ILoggingService.svc"
                 );
             });

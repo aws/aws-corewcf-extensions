@@ -8,6 +8,46 @@ namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
 public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingElement
 {
+    public const int DefaultMaxMessageSize = 262144; // Max size for SQS message is 262144 (2^18)
+
+    /// <summary>
+    /// Creates a new instance of the AwsSqsTransportBindingElement class
+    /// </summary>
+    /// <param name="concurrencyLevel">Maximum number of workers polling the queue for messages</param>
+    public AwsSqsTransportBindingElement(int concurrencyLevel = 1)
+    {
+        ConcurrencyLevel = concurrencyLevel;
+        MaxReceivedMessageSize = DefaultMaxMessageSize;
+    }
+
+    private AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
+    {
+        DispatchCallbacksCollection = other.DispatchCallbacksCollection;
+        QueueName = other.QueueName;
+        ConcurrencyLevel = other.ConcurrencyLevel;
+        MaxReceivedMessageSize = other.MaxReceivedMessageSize;
+    }
+
+    public override QueueTransportPump BuildQueueTransportPump(BindingContext context)
+    {
+        var services = context.BindingParameters.Find<IServiceProvider>();
+        var serviceDispatcher = context.BindingParameters.Find<IServiceDispatcher>();
+        var messageEncoding = context.Binding.Elements.Find<TextMessageEncodingBindingElement>().WriteEncoding;
+
+        var transport = new AwsSqsTransport(
+            services,
+            serviceDispatcher,
+            QueueName,
+            messageEncoding,
+            DispatchCallbacksCollection,
+            ConcurrencyLevel
+        );
+
+        return QueueTransportPump.CreateDefaultPump(transport);
+    }
+
+    public override int ConcurrencyLevel { get; }
+
     /// <summary>
     /// Gets the scheme used by the binding, https
     /// </summary>
@@ -23,60 +63,5 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     /// </summary>
     public IDispatchCallbacksCollection DispatchCallbacksCollection { get; set; }
 
-    public override int ConcurrencyLevel { get; } = 1;
-
-    /// <summary>
-    /// Creates a new instance of the AwsSqsTransportBindingElement class
-    /// </summary>
-    /// <param name="queueName">Name of the queue</param>
-    /// <param name="concurrencyLevel">Maximum number of workers polling the queue for messages</param>
-    /// <param name="dispatchCallbacksCollection">Collection of callbacks to be called after message dispatch</param>
-    /// <param name="maxMessageSize">The maximum message size in bytes for messages in the queue</param>
-    public AwsSqsTransportBindingElement(
-        string queueName,
-        int concurrencyLevel,
-        IDispatchCallbacksCollection dispatchCallbacksCollection,
-        long maxMessageSize = AwsSqsBinding.DefaultMaxMessageSize
-    )
-    {
-        QueueName = queueName;
-        ConcurrencyLevel = concurrencyLevel;
-        DispatchCallbacksCollection = dispatchCallbacksCollection;
-        MaxReceivedMessageSize = maxMessageSize;
-    }
-
-    private AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
-    {
-        DispatchCallbacksCollection = other.DispatchCallbacksCollection;
-        QueueName = other.QueueName;
-        ConcurrencyLevel = other.ConcurrencyLevel;
-        MaxReceivedMessageSize = other.MaxReceivedMessageSize;
-    }
-
-    public override QueueTransportPump BuildQueueTransportPump(BindingContext context)
-    {
-        var transport = GetAwsSqsTransportAsync(context);
-        return QueueTransportPump.CreateDefaultPump(transport);
-    }
-
-    public override BindingElement Clone()
-    {
-        return new AwsSqsTransportBindingElement(this);
-    }
-
-    private IQueueTransport GetAwsSqsTransportAsync(BindingContext context)
-    {
-        var services = context.BindingParameters.Find<IServiceProvider>();
-        var serviceDispatcher = context.BindingParameters.Find<IServiceDispatcher>();
-        var messageEncoding = context.Binding.Elements.Find<TextMessageEncodingBindingElement>().WriteEncoding;
-
-        return new AwsSqsTransport(
-            services,
-            serviceDispatcher,
-            QueueName,
-            messageEncoding,
-            DispatchCallbacksCollection,
-            ConcurrencyLevel
-        );
-    }
+    public override BindingElement Clone() => new AwsSqsTransportBindingElement(this);
 }
