@@ -88,7 +88,7 @@ public static class SQSClientExtensions
         return attributesResponse.QueueARN;
     }
 
-    public static IAmazonSQS EnsureSQSQueue(
+    public static async Task<IAmazonSQS> EnsureSQSQueue(
         this IAmazonSQS sqsClient,
         AWSOptions awsOptions,
         CreateQueueRequest createQueueRequest,
@@ -98,22 +98,17 @@ public static class SQSClientExtensions
         var queueName = createQueueRequest.QueueName;
         try
         {
-            var response = sqsClient.GetQueueUrlAsync(queueName).Result;
+            var response = await sqsClient.GetQueueUrlAsync(queueName);
             response.Validate();
         }
-        catch (Exception e)
+        catch (QueueDoesNotExistException)
         {
-            if (e.Message.Contains("queue does not exist"))
-            {
-                var createQueueRequestWithKms = EnsureKMSKey(createQueueRequest, awsOptions, accountIdsToAllow);
-                var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequestWithKms);
-                var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
-                response.Validate();
+            var createQueueRequestWithKms = EnsureKMSKey(createQueueRequest, awsOptions, accountIdsToAllow);
+            var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequestWithKms);
+            var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
+            response.Validate();
 
-                sqsClient.WithBasicPolicy(queueName);
-            }
-
-            throw;
+            sqsClient.WithBasicPolicy(queueName);
         }
 
         return sqsClient;

@@ -11,13 +11,6 @@ public delegate Task NotificationDelegate(IServiceProvider services, QueueMessag
 
 public class DispatchCallbackFactory
 {
-    public static NotificationDelegate GetNullCallback()
-    {
-        Task NullCallback(IServiceProvider services, QueueMessageContext context) => Task.CompletedTask;
-
-        return NullCallback;
-    }
-
     public static NotificationDelegate GetDefaultSuccessNotificationCallbackWithSns(string topicArn)
     {
         async Task DefaultSuccessNotificationCallbackWithSns(IServiceProvider services, QueueMessageContext context)

@@ -7,19 +7,16 @@ public class DispatchCallbacksCollection : IDispatchCallbacksCollection
     public NotificationDelegate NotificationDelegateForSuccessfulDispatch { get; set; }
     public NotificationDelegate NotificationDelegateForFailedDispatch { get; set; }
 
-    public DispatchCallbacksCollection()
-    {
-        NotificationDelegateForSuccessfulDispatch = DispatchCallbackFactory.GetNullCallback();
-        NotificationDelegateForFailedDispatch = DispatchCallbackFactory.GetNullCallback();
-    }
-
     public DispatchCallbacksCollection(
-        Func<IServiceProvider, QueueMessageContext, Task> notificationFuncForSuccessfulDispatch,
-        Func<IServiceProvider, QueueMessageContext, Task> notificationFuncForFailedDispatch
+        Func<IServiceProvider, QueueMessageContext, Task>? successfulDispatch = null,
+        Func<IServiceProvider, QueueMessageContext, Task>? failedDispatch = null
     )
     {
-        NotificationDelegateForSuccessfulDispatch = new NotificationDelegate(notificationFuncForSuccessfulDispatch);
-        NotificationDelegateForFailedDispatch = new NotificationDelegate(notificationFuncForFailedDispatch);
+        successfulDispatch ??= (_, _) => Task.CompletedTask;
+        failedDispatch ??= (_, _) => Task.CompletedTask;
+
+        NotificationDelegateForSuccessfulDispatch = new NotificationDelegate(successfulDispatch);
+        NotificationDelegateForFailedDispatch = new NotificationDelegate(failedDispatch);
     }
 
     public DispatchCallbacksCollection(
@@ -43,10 +40,5 @@ public class DispatchCallbacksCollectionFactory
             DispatchCallbackFactory.GetDefaultSuccessNotificationCallbackWithSns(successTopicArn),
             DispatchCallbackFactory.GetDefaultFailureNotificationCallbackWithSns(failureTopicArn)
         );
-    }
-
-    public static IDispatchCallbacksCollection GetNullCallbacksCollection()
-    {
-        return new DispatchCallbacksCollection();
     }
 }

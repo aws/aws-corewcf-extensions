@@ -5,15 +5,8 @@ namespace AWS.WCF.Extensions.SQS;
 internal static class SqsConstants
 {
     internal const string Scheme = "https";
-
-    private static readonly MessageEncoderFactory _messageEncoderFactory;
-
-    static SqsConstants()
-    {
-        _messageEncoderFactory = new TextMessageEncodingBindingElement().CreateMessageEncoderFactory();
-    }
-
-    internal static MessageEncoderFactory DefaultMessageEncoderFactory => _messageEncoderFactory;
+    
+    internal static MessageEncoderFactory DefaultMessageEncoderFactory { get; } = new TextMessageEncodingBindingElement().CreateMessageEncoderFactory();
 }
 
 static class SqsDefaults

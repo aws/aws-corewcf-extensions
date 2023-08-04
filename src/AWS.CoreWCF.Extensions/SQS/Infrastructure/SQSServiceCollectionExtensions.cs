@@ -11,7 +11,7 @@ public static class SQSServiceCollectionExtensions
         this IServiceCollection services,
         string queueName,
         Action<AWSOptions> awsOptionsAction,
-        Action<IAmazonSQS, AWSOptions, string> sqsClientAction = null
+        Action<IAmazonSQS, AWSOptions, string>? sqsClientAction = null
     )
     {
         var queueNames = new List<string> { queueName };
@@ -22,7 +22,7 @@ public static class SQSServiceCollectionExtensions
         this IServiceCollection services,
         IEnumerable<string> queueNames,
         Action<AWSOptions> awsOptionsAction,
-        Action<IAmazonSQS, AWSOptions, string> sqsClientAction = null
+        Action<IAmazonSQS, AWSOptions, string>? sqsClientAction = null
     )
     {
         AddAmazonSQSClient(services, queueNames, awsOptionsAction, sqsClientAction);
@@ -33,7 +33,7 @@ public static class SQSServiceCollectionExtensions
         IServiceCollection services,
         IEnumerable<string> queueNames,
         Action<AWSOptions> awsOptionsAction,
-        Action<IAmazonSQS, AWSOptions, string> sqsClientAction = null
+        Action<IAmazonSQS, AWSOptions, string>? sqsClientAction = null
     )
     {
         var awsOptions = new AWSOptions();
