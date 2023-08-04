@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.Extensions.IntegrationT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Extensions", "src\AWS.CoreWCF.Extensions\AWS.CoreWCF.Extensions.csproj", "{EC50B358-D8FC-45F9-9AAD-A87C4EF76A5A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{0504CCDB-7629-413F-BE27-31FC441DD585}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.WCF.Extensions", "src\AWS.WCF.Extensions\AWS.WCF.Extensions.csproj", "{16E6CB53-2515-4B8C-9134-49AF1F96346E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.Extensions.Tests", "test\AWS.CoreWCF.Extensions.Tests\AWS.CoreWCF.Extensions.Tests.csproj", "{6C31941A-4A56-4576-AB11-A8668F895B2A}"
@@ -29,10 +27,6 @@ Global
 		{EC50B358-D8FC-45F9-9AAD-A87C4EF76A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC50B358-D8FC-45F9-9AAD-A87C4EF76A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC50B358-D8FC-45F9-9AAD-A87C4EF76A5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0504CCDB-7629-413F-BE27-31FC441DD585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0504CCDB-7629-413F-BE27-31FC441DD585}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0504CCDB-7629-413F-BE27-31FC441DD585}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0504CCDB-7629-413F-BE27-31FC441DD585}.Release|Any CPU.Build.0 = Release|Any CPU
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16E6CB53-2515-4B8C-9134-49AF1F96346E}.Release|Any CPU.ActiveCfg = Release|Any CPU
