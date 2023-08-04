@@ -9,15 +9,11 @@ namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
 public class SQSMessageProvider
 {
-    private const int MaxSqsBatchSize = 10;
-
     private readonly ILogger<SQSMessageProvider> _logger;
     private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache = new ();
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes = new ();
-    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new();
+    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new ();
 
-    private readonly IAmazonSQS _sqsClient;
-    
     
     public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger<SQSMessageProvider> logger)
     {
@@ -49,7 +45,7 @@ public class SQSMessageProvider
             await mutex.WaitAsync().ConfigureAwait(false);
             try
             {
-                var newMessages = await namedClient.SQSClient.ReceiveMessagesAsync(queueUrl, _logger, MaxSqsBatchSize);
+                var newMessages = await namedClient.SQSClient.ReceiveMessagesAsync(queueUrl, _logger);
                 foreach (var newMessage in newMessages)
                 {
                     cachedMessages.Enqueue(newMessage);

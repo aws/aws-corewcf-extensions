@@ -11,11 +11,11 @@ namespace AWS.WCF.Extensions.SQS;
 
 public class SqsOutputChannel : ChannelBase, IOutputChannel
 {
-    private EndpointAddress _queueUrl;
-    private Uri _via;
-    private MessageEncoder _encoder;
-    private SqsChannelFactory _parent;
-    private IAmazonSQS _sqsClient;
+    private readonly EndpointAddress _queueUrl;
+    private readonly Uri _via;
+    private readonly MessageEncoder _encoder;
+    private readonly SqsChannelFactory _parent;
+    private readonly IAmazonSQS _sqsClient;
 
     internal SqsOutputChannel(
         SqsChannelFactory factory,

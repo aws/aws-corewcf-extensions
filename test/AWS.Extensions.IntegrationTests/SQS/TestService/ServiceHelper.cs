@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AWS.Extensions.IntegrationTests.SQS.TestService;
 
+[ExcludeFromCodeCoverage]
 public static class ServiceHelper
 {
     public static IWebHostBuilder CreateServiceHost<TStartup>(Action<IServiceCollection>? configureAction = null)

@@ -1,19 +1,20 @@
 ﻿using System.ServiceModel;
 using System.ServiceModel.Channels;
+using AWS.WCF.Extensions.SQS.Runtime;
 
 namespace AWS.WCF.Extensions.SQS;
 
 public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
 {
-    private BufferManager _bufferManager;
-    private MessageEncoderFactory _messageEncoderFactory;
-    private AwsSqsTransportBindingElement _bindingElement;
+    private readonly AwsSqsTransportBindingElement _bindingElement;
+    public BufferManager BufferManager { get; }
+    public MessageEncoderFactory MessageEncoderFactory { get; }
 
     internal SqsChannelFactory(AwsSqsTransportBindingElement bindingElement, BindingContext context)
         : base(context.Binding)
     {
         _bindingElement = bindingElement;
-        _bufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);
+        BufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);
 
         IEnumerable<MessageEncodingBindingElement> messageEncoderBindingElements = context.BindingParameters
             .OfType<MessageEncodingBindingElement>()
@@ -28,42 +29,25 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
 
         if (messageEncoderBindingElements.Count() == 1)
         {
-            _messageEncoderFactory = messageEncoderBindingElements.First().CreateMessageEncoderFactory();
+            MessageEncoderFactory = messageEncoderBindingElements.First().CreateMessageEncoderFactory();
         }
         else
         {
-            _messageEncoderFactory = SqsConstants.DefaultMessageEncoderFactory;
+            MessageEncoderFactory = SqsConstants.DefaultMessageEncoderFactory;
         }
     }
-
-    public BufferManager BufferManager => _bufferManager;
-
-    public MessageEncoderFactory MessageEncoderFactory => _messageEncoderFactory;
 
     public override T GetProperty<T>()
     {
-        T messageEncoderProperty = this.MessageEncoderFactory.Encoder.GetProperty<T>();
+        T messageEncoderProperty = MessageEncoderFactory.Encoder.GetProperty<T>();
         if (messageEncoderProperty != null)
-        {
             return messageEncoderProperty;
-        }
-
+        
         if (typeof(T) == typeof(MessageVersion))
-        {
-            return (T)(object)this.MessageEncoderFactory.Encoder.MessageVersion;
-        }
-
+            return (T)(object)MessageEncoderFactory.Encoder.MessageVersion;
+        
         return base.GetProperty<T>();
     }
-
-    protected override void OnOpen(TimeSpan timeout) { }
-
-    protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
-    {
-        return Task.CompletedTask;
-    }
-
-    protected override void OnEndOpen(IAsyncResult result) { }
 
     /// <summary>
     /// Create a new Udp Channel. Supports IOutputChannel.
@@ -76,9 +60,24 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
         return new SqsOutputChannel(this, _bindingElement.SqsClient, queueUrl, via, MessageEncoderFactory.Encoder);
     }
 
+    /// <summary>
+    /// Open the channel for use. We do not have any blocking work to perform so this is a no-op
+    /// </summary>
+    protected override void OnOpen(TimeSpan timeout) { }
+
+    protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
+    {
+        return Task.CompletedTask.ToApm(callback, state);
+    }
+
+    protected override void OnEndOpen(IAsyncResult result)
+    {
+        result.ToApmEnd();
+    }
+
     protected override void OnClosed()
     {
         base.OnClosed();
-        _bufferManager.Clear();
+        BufferManager.Clear();
     }
 }

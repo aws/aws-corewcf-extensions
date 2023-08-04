@@ -10,7 +10,7 @@ public static class CreateKeyRequestExtensions
         IEnumerable<string>? accountIdsToAllow = null
     )
     {
-        var basicKMSPolicy = BasicPolicyTemplates.GetBasicKMSPolicy("", accountIdsToAllow);
+        var basicKMSPolicy = BasicPolicyTemplates.GetBasicKMSPolicy(accountId, accountIdsToAllow);
         request.Policy = basicKMSPolicy;
 
         return request;

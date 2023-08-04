@@ -1,16 +1,12 @@
-﻿using System.ServiceModel.Channels;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceModel.Channels;
 
 namespace AWS.WCF.Extensions.SQS;
 
+[ExcludeFromCodeCoverage]
 internal static class SqsConstants
 {
     internal const string Scheme = "https";
     
     internal static MessageEncoderFactory DefaultMessageEncoderFactory { get; } = new TextMessageEncodingBindingElement().CreateMessageEncoderFactory();
-}
-
-static class SqsDefaults
-{
-    internal const long MaxBufferPoolSize = 64 * 1024;
-    internal const int MaxSendMessageSize = 262144; // Max size for SQS message is 262144 (2^18)
 }

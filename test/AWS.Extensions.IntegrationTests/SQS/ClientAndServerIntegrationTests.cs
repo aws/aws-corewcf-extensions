@@ -3,6 +3,7 @@ using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using AWS.Extensions.IntegrationTests.Common;
+using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Queue.Common;
 using Xunit;
@@ -14,9 +15,9 @@ namespace AWS.Extensions.IntegrationTests.SQS;
 public class ClientAndServerIntegrationTests : IDisposable
 {
     private readonly ITestOutputHelper _output;
-    private readonly Common.ClientAndServerFixture _clientAndServerFixture;
+    private readonly ClientAndServerFixture _clientAndServerFixture;
 
-    public ClientAndServerIntegrationTests(ITestOutputHelper output, Common.ClientAndServerFixture clientAndServerFixture)
+    public ClientAndServerIntegrationTests(ITestOutputHelper output, ClientAndServerFixture clientAndServerFixture)
     {
         _output = output;
         _clientAndServerFixture = clientAndServerFixture;
@@ -38,7 +39,7 @@ public class ClientAndServerIntegrationTests : IDisposable
 
         var clientService = _clientAndServerFixture.Channel;
         var sqsClient = _clientAndServerFixture.SqsClient;
-        var queueName = Common.ClientAndServerFixture.QueueWithDefaultSettings;
+        var queueName = ClientAndServerFixture.QueueWithDefaultSettings;
 
         // make sure queue is starting empty
         await SqsAssert.QueueIsEmpty(sqsClient, queueName);
@@ -75,14 +76,13 @@ public class ClientAndServerIntegrationTests : IDisposable
 
         var queueName = nameof(Can_Create_Queue) + Guid.NewGuid();
 
-        var fakeAwsAccountToAllow = "1234567890";
+        var fakeAwsAccountToAllow = "123456789010";
 
         var awsOptions = new AWSOptions();
         _clientAndServerFixture.AWSOptionsBuilder.Populate(awsOptions);
 
         var createQueueRequest =
             new CreateQueueRequest(queueName)
-                //.WithFIFO()
                 .WithDeadLetterQueue()
                 .WithKMSEncryption("kmsMasterKeyId");
 

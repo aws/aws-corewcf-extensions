@@ -1,9 +1,11 @@
-﻿using Amazon.SQS;
+﻿using System.Diagnostics.CodeAnalysis;
+using Amazon.SQS;
 using AWS.CoreWCF.Extensions.Common;
 using Xunit;
 
 namespace AWS.Extensions.IntegrationTests.Common;
 
+[ExcludeFromCodeCoverage]
 public class SqsAssert
 {
     public static async Task QueueIsEmpty(

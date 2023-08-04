@@ -6,9 +6,9 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
-using AWS.CoreWCF.Extensions.SQS.Channels;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
+using AWS.Extensions.IntegrationTests.Common;
 using AWS.Extensions.IntegrationTests.SQS.TestService;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Configuration;
@@ -18,24 +18,21 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
-using static AWS.Extensions.IntegrationTests.Common.ClientAndServerFixture;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace AWS.Extensions.IntegrationTests.SQS;
+namespace AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 
 [CollectionDefinition("ClientAndServer collection")]
-public class ClientAndServerCollectionFixture : ICollectionFixture<Common.ClientAndServerFixture>
+public class ClientAndServerCollectionFixture : ICollectionFixture<ClientAndServerFixture>
 {
     // This class has no code, and is never created. Its purpose is simply
     // to be the place to apply [CollectionDefinition] and all the
     // ICollectionFixture<> interfaces.
 }
 
-public partial class ClientAndServerFixture : IDisposable
+public class ClientAndServerFixture : IDisposable
 {
     private ChannelFactory<ILoggingService> _factory;
 
