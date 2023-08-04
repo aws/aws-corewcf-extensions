@@ -4,6 +4,10 @@ public class BasicPolicyTemplates
 {
     private const string AccountIdPlaceholder = "ACCOUNT_ID_PLACEHOLDER";
     private const string SQSArnPlaceholder = "SQS_ARN_PLACEHOLDER";
+    /// <remarks>
+    /// Must use "sqs:*" to get around limit of 7 actions in IAM Policies.
+    /// Currently, needs 8 actions.
+    /// </remarks>
     public const string BasicSQSPolicyTemplate =
         $@"{{
   ""Version"": ""2008-10-17"",
@@ -16,14 +20,7 @@ public class BasicPolicyTemplates
         ""AWS"": ""{AccountIdPlaceholder}""
       }},
       ""Action"": [
-        ""sqs:CreateQueue"",
-        ""sqs:DeleteMessage"",
-        ""sqs:GetQueueAttributes"",
-        ""sqs:GetQueueUrl"",
-        ""sqs:ReceiveMessage"",
-        ""sqs:SendMessage"",
-        ""sqs:SetQueueAttributes"",
-        ""sqs:TagQueue""
+        ""sqs:*""
       ],
       ""Resource"": ""{SQSArnPlaceholder}""
     }}

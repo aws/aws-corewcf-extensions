@@ -2,15 +2,17 @@
 using Microsoft.AspNetCore.Hosting;
 using System.Diagnostics;
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AWS.Extensions.IntegrationTests.SQS.TestService;
 
 public static class ServiceHelper
 {
-    public static IWebHostBuilder CreateServiceHost<TStartup>()
+    public static IWebHostBuilder CreateServiceHost<TStartup>(Action<IServiceCollection>? configureAction = null)
         where TStartup : class =>
         WebHost
             .CreateDefaultBuilder(Array.Empty<string>())
+            .ConfigureServices(configureAction ?? ( _ => {}))
             .UseKestrel(options =>
             {
                 options.Limits.MaxRequestBufferSize = null;

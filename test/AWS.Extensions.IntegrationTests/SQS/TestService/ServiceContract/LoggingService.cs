@@ -26,16 +26,10 @@ public interface ILoggingService
 [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
 public class LoggingService : ILoggingService
 {
-    public static readonly ConcurrentDictionary<string, ManualResetEventSlim> LogResults = new();
-
-    internal static string InitializeTestCase(string testCaseName)
-    {
-        LogResults[testCaseName] = new ManualResetEventSlim(false);
-        return testCaseName;
-    }
+    public static readonly ConcurrentBag<string> LogResults = new();
 
     public void LogMessage(string toLog)
     {
-        LogResults[toLog].Set();
+        LogResults.Add(toLog);
     }
 }

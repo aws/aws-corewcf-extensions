@@ -8,13 +8,13 @@ namespace AWS.Extensions.IntegrationTests.SQS;
 [Collection("ClientAndServer collection")]
 public class ClientAndServerIntegrationTests
 {
-    private readonly ITestOutputHelper _output;
     private readonly ClientAndServerFixture _clientAndServerFixture;
 
     public ClientAndServerIntegrationTests(ITestOutputHelper output, ClientAndServerFixture clientAndServerFixture)
     {
-        _output = output;
         _clientAndServerFixture = clientAndServerFixture;
+
+        _clientAndServerFixture.Start(output);
     }
 
     [Fact]
@@ -24,11 +24,28 @@ public class ClientAndServerIntegrationTests
         var sqsClient = _clientAndServerFixture.SqsClient;
         var queueName = ClientAndServerFixture.QueueWithDefaultSettings;
 
-        var testCaseName = nameof(Server_Reads_And_Dispatches_Message_From_Sqs);
-        LoggingService.InitializeTestCase(testCaseName);
-        clientService.LogMessage(testCaseName);
+        // make sure queue is starting empty
+        await SqsAssert.QueueIsEmpty(sqsClient, queueName);
 
-        Assert.True(LoggingService.LogResults[testCaseName].Wait(TimeSpan.FromSeconds(5)));
+
+        var expectedLogMessage = nameof(Server_Reads_And_Dispatches_Message_From_Sqs) + Guid.NewGuid();
+        clientService.LogMessage(expectedLogMessage);
+
+        var serverReceivedMessage = false;
+
+        // poll for up to 20 seconds
+        for (var polling = 0; polling < 40; polling++)
+        {
+            if (LoggingService.LogResults.Contains(expectedLogMessage))
+            {
+                serverReceivedMessage = true;
+                break;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        }
+
+        Assert.True(serverReceivedMessage);
         await SqsAssert.QueueIsEmpty(sqsClient, queueName);
     }
 }

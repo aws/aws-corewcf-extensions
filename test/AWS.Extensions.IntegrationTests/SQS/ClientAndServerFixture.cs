@@ -1,10 +1,13 @@
-﻿using System.ServiceModel;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceModel;
+using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
+using AWS.CoreWCF.Extensions.SQS.Channels;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
 using AWS.Extensions.IntegrationTests.SQS.TestService;
@@ -18,6 +21,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
+using static AWS.Extensions.IntegrationTests.SQS.ClientAndServerFixture;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace AWS.Extensions.IntegrationTests.SQS;
 
@@ -29,39 +36,37 @@ public class ClientAndServerCollectionFixture : ICollectionFixture<ClientAndServ
     // ICollectionFixture<> interfaces.
 }
 
-public class ClientAndServerFixture : IDisposable
+public partial class ClientAndServerFixture : IDisposable
 {
-    private const string AwsKey = "AWS";
-    private const string ProfileEnvVariable = "PROFILE";
-
-    //private const string AccessKeyEnvVariable = "AWS_ACCESS_KEY_ID";
-    //private const string SecretKeyEnvVariable = "AWS_SECRET_ACCESS_KEY";
-    //private const string TestQueueNameEnvVariable = "TEST_QUEUE_NAME";
-    private const string SuccessTopicArnEnvVariable = "SUCCESS_TOPIC_ARN";
-    private const string FailureTopicArnEnvVariable = "FAILURE_TOPIC_ARN";
-
     private ChannelFactory<ILoggingService> _factory;
-
-    public static string Profile { get; set; } = string.Empty;
-
-    //public static string AccessKey { get; set; } = string.Empty;
-    //public static string SecretKey { get; set; } = string.Empty;
-    //public static string QueueName { get; set; } = string.Empty;
-    public static string SuccessTopicArn { get; set; } = string.Empty;
-    public static string FailureTopicArn { get; set; } = string.Empty;
+    
     public const string QueueWithDefaultSettings = "CoreWCFExtensionsDefaultSettingsQueue";
     public const string FifoQueueName = "CoreWCFExtensionsTest.fifo";
 
     public IWebHost Host { get; private set; }
     public ILoggingService Channel { get; private set; }
-    public IAmazonSQS SqsClient { get; }
+    public IAmazonSQS SqsClient { get; private set; }
 
-    public ClientAndServerFixture()
+    public void Start(ITestOutputHelper testOutputHelper)
     {
-        ReadTestEnvironmentSettingsFromFile(Path.Combine("SQS", "appsettings.test.json"));
-        SqsClient = new AmazonSQSClient(CredentialsHelper.GetCredentials(new AWSOptions { Profile = Profile }));
+        var settingsJson = File.ReadAllText(Path.Combine("SQS", "appsettings.test.json"));
 
-        CreateAndStartHost();
+        var settings = JsonSerializer.Deserialize<Settings>(settingsJson)!;
+
+        SqsClient = new AmazonSQSClient(
+            new BasicAWSCredentials(settings.AWS.AWS_ACCESS_KEY_ID, settings.AWS.AWS_SECRET_ACCESS_KEY),
+            RegionEndpoint.GetBySystemName(settings.AWS.AWS_REGION));
+
+        Host =
+            ServiceHelper
+                .CreateServiceHost<Startup>(services => 
+                    services
+                        .AddSingleton(settings)
+                        .AddLogging(builder => builder.AddProvider(new XUnitLoggingProvider(testOutputHelper))))
+                .Build();
+
+        Host.Start();
+
         CreateAndOpenClientChannel();
         //EnsureQueueIsEmpty();
     }
@@ -74,40 +79,30 @@ public class ClientAndServerFixture : IDisposable
         }
     }
 
-    private void EnsureQueueIsEmpty()
-    {
+    //private void EnsureQueueIsEmpty()
+    //{
         //var response = SqsClient.PurgeQueueAsync(QueueUrl).Result;
         //response.Validate();
-    }
-
-    private void CreateAndStartHost()
-    {
-        Host = ServiceHelper.CreateServiceHost<Startup>().Build();
-        Host.Start();
-    }
+    //}
 
     private void CreateAndOpenClientChannel()
     {
-        var sqsBinding = new WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueWithDefaultSettings);
+        var sqsBinding = new AWS.WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueWithDefaultSettings);
         var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
         _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
         Channel = _factory.CreateChannel();
         ((System.ServiceModel.Channels.IChannel)Channel).Open();
     }
 
-    private void ReadTestEnvironmentSettingsFromFile(string settingsFilePath)
-    {
-        var json = File.ReadAllText(settingsFilePath);
-        var appSettingsDictionary = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(json);
-
-        var settingsDict = appSettingsDictionary[AwsKey];
-        Profile = settingsDict[ProfileEnvVariable];
-        SuccessTopicArn = settingsDict[SuccessTopicArnEnvVariable];
-        FailureTopicArn = settingsDict[FailureTopicArnEnvVariable];
-    }
-
     private class Startup
     {
+        private readonly Settings _settings;
+
+        public Startup(Settings settings)
+        {
+            _settings = settings;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddServiceModelServices();
@@ -119,12 +114,16 @@ public class ClientAndServerFixture : IDisposable
             });
 #endif
 
+            var bindAwsOptionsToSettings = new Action<AWSOptions>(opts =>
+            {
+                opts.Credentials = new BasicAWSCredentials(_settings.AWS.AWS_ACCESS_KEY_ID, _settings.AWS.AWS_SECRET_ACCESS_KEY);
+                opts.Region = RegionEndpoint.GetBySystemName(_settings.AWS.AWS_REGION);
+            });
+
+            
             services.AddSQSClient(
                 QueueWithDefaultSettings,
-                (awsOptions) =>
-                {
-                    awsOptions.Profile = Profile;
-                },
+                bindAwsOptionsToSettings,
                 (sqsClient, awsOptions, queueName) =>
                 {
                     sqsClient.EnsureSQSQueue(awsOptions, new CreateQueueRequest(queueName).SetDefaultValues());
@@ -133,10 +132,7 @@ public class ClientAndServerFixture : IDisposable
 
             services.AddSQSClient(
                 FifoQueueName,
-                (awsOptions) =>
-                {
-                    awsOptions.Profile = Profile;
-                },
+                bindAwsOptionsToSettings,
                 (sqsClient, awsOptions, queueName) =>
                 {
                     sqsClient
@@ -159,8 +155,16 @@ public class ClientAndServerFixture : IDisposable
         {
             var queueName = QueueWithDefaultSettings;
 
-            var successTopicArn = SuccessTopicArn;
-            var failureTopicArn = FailureTopicArn;
+            var sqsClient = app.ApplicationServices.GetServices<NamedSQSClient>()
+                .FirstOrDefault(x => x.QueueName == queueName)?.SQSClient;
+
+            if (null == sqsClient)
+                throw new Exception($"Failed to find SqsClient for Queue: [{queueName}]");
+
+            var queueUrl = sqsClient.GetQueueUrlAsync(queueName).Result.QueueUrl;
+
+            var successTopicArn = _settings.AWS.SUCCESS_TOPIC_ARN; 
+            var failureTopicArn = _settings.AWS.FAILURE_TOPIC_ARN;
 
             app.UseServiceModel(services =>
             {
@@ -175,9 +179,26 @@ public class ClientAndServerFixture : IDisposable
                                 failureTopicArn
                             )
                     },
-                    "/BasicSqsService/ILoggingService.svc"
+                    queueUrl
                 );
             });
+        }
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public class Settings
+    {
+        public AWSSettings AWS { get; set; } = new();
+
+        public class AWSSettings
+        {
+            //public string? PROFILE { get; set; }
+            public string? AWS_ACCESS_KEY_ID { get; set; }
+            public string? AWS_SECRET_ACCESS_KEY { get; set; }
+            public string? AWS_REGION { get; set; } = "us-west-2";
+            public string? FAILURE_TOPIC_ARN { get; set; }
+            public string? SUCCESS_TOPIC_ARN { get; set; }
+            public string? TEST_QUEUE_NAME { get; set; }
         }
     }
 }

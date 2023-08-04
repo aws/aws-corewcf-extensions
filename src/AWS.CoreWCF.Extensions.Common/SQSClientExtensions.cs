@@ -27,7 +27,7 @@ public static class SQSClientExtensions
         }
     }
 
-    public static async Task<IEnumerable<Message>> ReceiveMessagesAsync(
+    public static async Task<IEnumerable<Amazon.SQS.Model.Message>> ReceiveMessagesAsync(
         this IAmazonSQS sqsClient,
         string queueUrl,
         ILogger logger,

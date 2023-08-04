@@ -1,8 +1,11 @@
-﻿using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
+﻿using Amazon.Runtime.Internal.Util;
+using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using CoreWCF.Channels;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common;
 using CoreWCF.Queue.Common.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
@@ -40,6 +43,7 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
             QueueName,
             messageEncoding,
             DispatchCallbacksCollection,
+            services.GetService<ILogger<AwsSqsTransport>>(),
             ConcurrencyLevel
         );
 

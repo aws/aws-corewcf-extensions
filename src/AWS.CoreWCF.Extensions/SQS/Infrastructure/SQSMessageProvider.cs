@@ -1,23 +1,27 @@
 ﻿using System.Collections.Concurrent;
+using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
 public class SQSMessageProvider
 {
     private const int MaxSqsBatchSize = 10;
-    private readonly ILogger _logger;
-    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes;
-    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients;
 
-    public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger? logger = null)
+    private readonly ILogger<SQSMessageProvider> _logger;
+    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache = new ();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes = new ();
+    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new();
+
+    private readonly IAmazonSQS _sqsClient;
+    
+    
+    public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger<SQSMessageProvider> logger)
     {
-        _logger = logger ?? NullLogger.Instance;
+        _logger = logger;
 
         // TODO: handle visibility timeout if needed later via MemoryCache expiry
         _queueMessageCache = new ConcurrentDictionary<string, ConcurrentQueue<Message>>();
@@ -32,8 +36,8 @@ public class SQSMessageProvider
             _namedSQSClients.TryAdd(queueName, namedSQSClient);
         }
     }
-
-    public async Task<Message?> ReceiveMessageAsync(string queueName)
+    
+    public async Task<Amazon.SQS.Model.Message?> ReceiveMessageAsync(string queueName)
     {
         var cachedMessages = _queueMessageCache[queueName];
         var namedClient = _namedSQSClients[queueName];
