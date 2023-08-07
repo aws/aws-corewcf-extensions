@@ -16,5 +16,6 @@ public class Settings
         public string? FAILURE_TOPIC_ARN { get; set; }
         public string? SUCCESS_TOPIC_ARN { get; set; }
         public string? TEST_QUEUE_NAME { get; set; }
+        public string? SUCCESS_QUEUE_NAME { get; set; }
     }
 }

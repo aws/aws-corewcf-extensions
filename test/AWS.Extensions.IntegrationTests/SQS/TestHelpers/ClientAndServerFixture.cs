@@ -44,6 +44,8 @@ public class ClientAndServerFixture : IDisposable
     public IAmazonSQS? SqsClient { get; private set; }
     public string QueueName { get; private set; }
 
+    public Settings Settings { get; private set; }
+
     public IntegrationTestAWSOptionsBuilder AWSOptionsBuilder { get; private set; }
     
     public void Start(
@@ -55,18 +57,18 @@ public class ClientAndServerFixture : IDisposable
 
         var settingsJson = File.ReadAllText(Path.Combine("SQS", "appsettings.test.json"));
 
-        var settings = JsonSerializer.Deserialize<Settings>(settingsJson)!;
+        Settings = JsonSerializer.Deserialize<Settings>(settingsJson)!;
 
-        AWSOptionsBuilder = new IntegrationTestAWSOptionsBuilder(settings);
+        AWSOptionsBuilder = new IntegrationTestAWSOptionsBuilder(Settings);
 
         SqsClient = new AmazonSQSClient(
-            new BasicAWSCredentials(settings.AWS.AWS_ACCESS_KEY_ID, settings.AWS.AWS_SECRET_ACCESS_KEY),
-            RegionEndpoint.GetBySystemName(settings.AWS.AWS_REGION));
+            new BasicAWSCredentials(Settings.AWS.AWS_ACCESS_KEY_ID, Settings.AWS.AWS_SECRET_ACCESS_KEY),
+            RegionEndpoint.GetBySystemName(Settings.AWS.AWS_REGION));
 
         dispatchCallbacks ??=
             DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
-                settings.AWS.SUCCESS_TOPIC_ARN ?? "",
-                settings.AWS.FAILURE_TOPIC_ARN ?? ""
+                Settings.AWS.SUCCESS_TOPIC_ARN ?? "",
+                Settings.AWS.FAILURE_TOPIC_ARN ?? ""
             );
 
         Host =
@@ -153,7 +155,12 @@ public class ClientAndServerFixture : IDisposable
                 }
             );
 
+            var awsOptions = new AWSOptions();
+            _awsOptionsBuilder.Populate(awsOptions);
+
+            services.AddDefaultAWSOptions(awsOptions);
             services.AddAWSService<IAmazonSimpleNotificationService>();
+
             services.AddQueueTransport();
         }
 

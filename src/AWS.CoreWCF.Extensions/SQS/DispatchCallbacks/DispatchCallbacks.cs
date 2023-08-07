@@ -25,9 +25,7 @@ public class DispatchCallbackFactory
             {
                 TargetArn = topicArn,
                 Subject = subject,
-                Message = message,
-                MessageGroupId = subject.ToCrc32Hash(),
-                MessageDeduplicationId = message.ToCrc32Hash()
+                Message = message
             };
             await SendNotificationToSns(services, publishRequest);
         }
@@ -49,9 +47,7 @@ public class DispatchCallbackFactory
             {
                 TargetArn = topicArn,
                 Subject = subject,
-                Message = message,
-                MessageGroupId = subject.ToCrc32Hash(),
-                MessageDeduplicationId = message.ToCrc32Hash()
+                Message = message
             };
             await SendNotificationToSns(services, publishRequest);
         }
