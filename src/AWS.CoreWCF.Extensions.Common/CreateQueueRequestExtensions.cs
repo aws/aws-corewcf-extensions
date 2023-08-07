@@ -1,6 +1,7 @@
-﻿using Amazon.SQS.Model;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Amazon.SQS.Model;
 using Amazon.SQS;
-using Newtonsoft.Json;
 
 namespace AWS.CoreWCF.Extensions.Common;
 
@@ -40,7 +41,7 @@ public static class CreateQueueRequestExtensions
             redrivePolicy[nameof(deadLetterTargetArn)] = deadLetterTargetArn;
         }
 
-        request.Attributes[QueueAttributeName.RedrivePolicy] = JsonConvert.SerializeObject(redrivePolicy);
+        request.Attributes[QueueAttributeName.RedrivePolicy] = JsonSerializer.Serialize(redrivePolicy);
         return request;
     }
 
@@ -117,7 +118,7 @@ public static class CreateQueueRequestExtensions
     {
         if (
             createQueueRequest.Attributes.TryGetValue(QueueAttributeName.RedrivePolicy, out var redrivePolicyString)
-            && JsonConvert.DeserializeObject<Dictionary<string, string>>(redrivePolicyString)
+            && JsonSerializer.Deserialize<Dictionary<string, string>>(redrivePolicyString)
                 is Dictionary<string, string> redrivePolicy
         )
         {

@@ -1,4 +1,5 @@
-﻿using Amazon.Extensions.NETCore.Setup;
+﻿using System.Text.Json;
+using Amazon.Extensions.NETCore.Setup;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using Amazon.Runtime;
@@ -7,7 +8,6 @@ using Amazon.SecurityToken.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace AWS.CoreWCF.Extensions.Common;
 
@@ -221,7 +221,7 @@ public static class SQSClientExtensions
 
         // Add DLQ ARN to existing redrive policy and return
         redrivePolicy["deadLetterTargetArn"] = dlqArn;
-        createQueueRequest.Attributes[QueueAttributeName.RedrivePolicy] = JsonConvert.SerializeObject(redrivePolicy);
+        createQueueRequest.Attributes[QueueAttributeName.RedrivePolicy] = JsonSerializer.Serialize(redrivePolicy);
         return createQueueRequest;
     }
 
