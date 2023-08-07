@@ -21,6 +21,14 @@ public interface ILoggingService
     )]
     [OperationContract(Name = "LogMessage", Action = Constants.OPERATION_BASE + "LogMessage", IsOneWay = true)]
     public void LogMessage(string toLog);
+
+    [System.ServiceModel.OperationContract(
+        Name = "CauseFailure",
+        Action = Constants.OPERATION_BASE + "CauseFailure",
+        IsOneWay = true
+    )]
+    [OperationContract(Name = "CauseFailure", Action = Constants.OPERATION_BASE + "CauseFailure", IsOneWay = true)]
+    void CauseFailure();
 }
 
 [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
@@ -31,5 +39,10 @@ public class LoggingService : ILoggingService
     public void LogMessage(string toLog)
     {
         LogResults.Add(toLog);
+    }
+
+    public void CauseFailure()
+    {
+        throw new Exception("Trigger Failure");
     }
 }
