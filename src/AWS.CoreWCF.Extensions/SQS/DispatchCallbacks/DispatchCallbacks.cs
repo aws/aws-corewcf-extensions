@@ -55,11 +55,19 @@ public static class DispatchCallbackFactory
         return DefaultFailureNotificationCallbackWithSns;
     }
 
+    private static bool HasAddedCustomUserAgentSuffix;
     private static async Task SendNotificationToSns(IServiceProvider services, PublishRequest publishRequest)
     {
         try
         {
             var snsClient = services.GetRequiredService<IAmazonSimpleNotificationService>();
+
+            if (!HasAddedCustomUserAgentSuffix)
+            {
+                (snsClient as AmazonSimpleNotificationServiceClient)?.SetCustomUserAgentSuffix();
+                HasAddedCustomUserAgentSuffix = true;
+            }
+
             var response = await snsClient.PublishAsync(publishRequest);
 
             response.Validate();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,8 @@ public class SQSMessageProvider
 
         foreach (var namedSQSClient in namedSQSClients)
         {
+            (namedSQSClient.SQSClient as AmazonSQSClient)?.SetCustomUserAgentSuffix();
+
             var queueName = namedSQSClient.QueueName;
             _queueMessageCache.TryAdd(queueName, new ConcurrentQueue<Message>());
             _cacheMutexes.TryAdd(queueName, new SemaphoreSlim(1, 1));

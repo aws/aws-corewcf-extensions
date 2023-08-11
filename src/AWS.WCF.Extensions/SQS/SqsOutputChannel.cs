@@ -45,6 +45,8 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
         _via = via;
         _encoder = encoder;
         _sqsClient = sqsClient;
+
+        (_sqsClient as AmazonSQSClient)?.SetCustomUserAgentSuffix();
     }
 
     EndpointAddress IOutputChannel.RemoteAddress => _queueUrl;
