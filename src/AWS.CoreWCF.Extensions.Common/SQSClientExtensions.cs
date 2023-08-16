@@ -103,12 +103,19 @@ public static class SQSClientExtensions
         }
         catch (QueueDoesNotExistException)
         {
-            var createQueueRequestWithKms = EnsureKMSKey(createQueueRequest, awsOptions, accountIdsToAllow);
-            var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequestWithKms);
-            var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
-            response.Validate();
+            try
+            {
+                var createQueueRequestWithKms = EnsureKMSKey(createQueueRequest, awsOptions, accountIdsToAllow);
+                var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequestWithKms);
+                var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
+                response.Validate();
 
-            sqsClient.WithBasicPolicy(queueName);
+                sqsClient.WithBasicPolicy(queueName);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed to automatically create Queue [{queueName}]", e);
+            }
         }
 
         return sqsClient;

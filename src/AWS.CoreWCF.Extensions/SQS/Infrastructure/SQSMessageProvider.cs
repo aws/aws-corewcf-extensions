@@ -1,18 +1,16 @@
 ﻿using System.Collections.Concurrent;
-using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
 public class SQSMessageProvider
 {
     private readonly ILogger<SQSMessageProvider> _logger;
-    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache = new();
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes = new();
-    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new();
+    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes;
+    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients;
 
     public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger<SQSMessageProvider> logger)
     {
@@ -41,18 +39,23 @@ public class SQSMessageProvider
         if (cachedMessages.IsEmpty)
         {
             var mutex = _cacheMutexes[queueName];
+
             await mutex.WaitAsync().ConfigureAwait(false);
-            try
+
+            if (cachedMessages.IsEmpty)
             {
-                var newMessages = await namedClient.SQSClient.ReceiveMessagesAsync(queueUrl, _logger);
-                foreach (var newMessage in newMessages)
+                try
                 {
-                    cachedMessages.Enqueue(newMessage);
+                    var newMessages = await namedClient.SQSClient.ReceiveMessagesAsync(queueUrl, _logger);
+                    foreach (var newMessage in newMessages)
+                    {
+                        cachedMessages.Enqueue(newMessage);
+                    }
                 }
-            }
-            finally
-            {
-                mutex.Release();
+                finally
+                {
+                    mutex.Release();
+                }
             }
         }
 
