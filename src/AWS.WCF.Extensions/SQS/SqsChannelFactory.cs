@@ -42,10 +42,10 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
         T messageEncoderProperty = MessageEncoderFactory.Encoder.GetProperty<T>();
         if (messageEncoderProperty != null)
             return messageEncoderProperty;
-        
+
         if (typeof(T) == typeof(MessageVersion))
             return (T)(object)MessageEncoderFactory.Encoder.MessageVersion;
-        
+
         return base.GetProperty<T>();
     }
 

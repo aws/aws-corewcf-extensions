@@ -40,12 +40,14 @@ public class SnsCallbackIntegrationTests : IDisposable
 
         var clientService = _clientAndServerFixture.Channel!;
 
-        var successQueueUrl =
-            (await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(_clientAndServerFixture.Settings.AWS.SUCCESS_QUEUE_NAME))
-            .QueueUrl;
+        var successQueueUrl = (
+            await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(
+                _clientAndServerFixture.Settings.AWS.SUCCESS_QUEUE_NAME
+            )
+        ).QueueUrl;
 
         Assert.NotEmpty(successQueueUrl);
-    
+
         // ACT
         clientService.LogMessage(logMessage);
 
@@ -55,7 +57,7 @@ public class SnsCallbackIntegrationTests : IDisposable
         {
             var messages = await _clientAndServerFixture.SqsClient.ReceiveMessageAsync(successQueueUrl);
 
-            // sns message body contains a message of the corewcf queue that originally 
+            // sns message body contains a message of the corewcf queue that originally
             // received the message
             if (messages.Messages.Any(m => m.Body.Contains(coreWcfQueueName)))
             {

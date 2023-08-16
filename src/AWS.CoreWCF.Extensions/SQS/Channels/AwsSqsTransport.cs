@@ -30,8 +30,8 @@ internal class AwsSqsTransport : IQueueTransport
         IServiceDispatcher serviceDispatcher,
         string queueName,
         Encoding encoding,
-        IDispatchCallbacksCollection dispatchCallbacksCollection, 
-        ILogger<AwsSqsTransport> logger, 
+        IDispatchCallbacksCollection dispatchCallbacksCollection,
+        ILogger<AwsSqsTransport> logger,
         int concurrencyLevel = 1
     )
     {

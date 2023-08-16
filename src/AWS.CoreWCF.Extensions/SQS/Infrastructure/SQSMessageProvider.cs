@@ -10,11 +10,10 @@ namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 public class SQSMessageProvider
 {
     private readonly ILogger<SQSMessageProvider> _logger;
-    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache = new ();
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes = new ();
-    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new ();
+    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache = new();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes = new();
+    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients = new();
 
-    
     public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger<SQSMessageProvider> logger)
     {
         _logger = logger;
@@ -32,7 +31,7 @@ public class SQSMessageProvider
             _namedSQSClients.TryAdd(queueName, namedSQSClient);
         }
     }
-    
+
     public async Task<Amazon.SQS.Model.Message?> ReceiveMessageAsync(string queueName)
     {
         var cachedMessages = _queueMessageCache[queueName];

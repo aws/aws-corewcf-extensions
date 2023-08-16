@@ -47,11 +47,12 @@ public class ClientAndServerFixture : IDisposable
     public Settings Settings { get; private set; }
 
     public IntegrationTestAWSOptionsBuilder AWSOptionsBuilder { get; private set; }
-    
+
     public void Start(
         ITestOutputHelper testOutputHelper,
         string queueName = QueueWithDefaultSettings,
-        IDispatchCallbacksCollection? dispatchCallbacks = null)
+        IDispatchCallbacksCollection? dispatchCallbacks = null
+    )
     {
         QueueName = queueName;
 
@@ -63,23 +64,24 @@ public class ClientAndServerFixture : IDisposable
 
         SqsClient = new AmazonSQSClient(
             new BasicAWSCredentials(Settings.AWS.AWS_ACCESS_KEY_ID, Settings.AWS.AWS_SECRET_ACCESS_KEY),
-            RegionEndpoint.GetBySystemName(Settings.AWS.AWS_REGION));
+            RegionEndpoint.GetBySystemName(Settings.AWS.AWS_REGION)
+        );
 
-        dispatchCallbacks ??=
-            DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
-                Settings.AWS.SUCCESS_TOPIC_ARN ?? "",
-                Settings.AWS.FAILURE_TOPIC_ARN ?? ""
-            );
+        dispatchCallbacks ??= DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
+            Settings.AWS.SUCCESS_TOPIC_ARN ?? "",
+            Settings.AWS.FAILURE_TOPIC_ARN ?? ""
+        );
 
-        Host =
-            ServiceHelper
-                .CreateServiceHost<Startup>(services =>
+        Host = ServiceHelper
+            .CreateServiceHost<Startup>(
+                services =>
                     services
                         .AddSingleton(AWSOptionsBuilder)
-                        .AddSingleton(new DefaultQueueNameProvider{ QueueName = queueName})
+                        .AddSingleton(new DefaultQueueNameProvider { QueueName = queueName })
                         .AddSingleton<IDispatchCallbacksCollection>(dispatchCallbacks)
-                        .AddLogging(builder => builder.AddProvider(new XUnitLoggingProvider(testOutputHelper))))
-                .Build();
+                        .AddLogging(builder => builder.AddProvider(new XUnitLoggingProvider(testOutputHelper)))
+            )
+            .Build();
 
         Host.Start();
 
@@ -101,7 +103,7 @@ public class ClientAndServerFixture : IDisposable
         var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
         _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
         Channel = _factory.CreateChannel();
-        ((System.ServiceModel.Channels.IChannel) Channel).Open();
+        ((System.ServiceModel.Channels.IChannel)Channel).Open();
     }
 
     private class Startup
@@ -113,7 +115,8 @@ public class ClientAndServerFixture : IDisposable
         public Startup(
             IntegrationTestAWSOptionsBuilder awsOptionsBuilder,
             DefaultQueueNameProvider defaultQueueNameProvider,
-            IDispatchCallbacksCollection dispatchCallbacksCollection)
+            IDispatchCallbacksCollection dispatchCallbacksCollection
+        )
         {
             _awsOptionsBuilder = awsOptionsBuilder;
             _defaultQueueNameProvider = defaultQueueNameProvider;
@@ -125,7 +128,10 @@ public class ClientAndServerFixture : IDisposable
             services.AddServiceModelServices();
             services.AddSingleton<ILogger>(NullLogger.Instance);
 #if DEBUG
-            services.AddLogging(builder => { builder.AddConsole(); });
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+            });
 #endif
 
             services.AddSQSClient(
@@ -150,8 +156,7 @@ public class ClientAndServerFixture : IDisposable
                                 .WithFIFO()
                                 .WithManagedServerSideEncryption()
                         )
-                        .Result
-                        .WithBasicPolicy(queueName);
+                        .Result.WithBasicPolicy(queueName);
                 }
             );
 
@@ -168,8 +173,10 @@ public class ClientAndServerFixture : IDisposable
         {
             var queueName = _defaultQueueNameProvider.QueueName;
 
-            var sqsClient = app.ApplicationServices.GetServices<NamedSQSClient>()
-                .FirstOrDefault(x => x.QueueName == queueName)?.SQSClient;
+            var sqsClient = app.ApplicationServices
+                .GetServices<NamedSQSClient>()
+                .FirstOrDefault(x => x.QueueName == queueName)
+                ?.SQSClient;
 
             if (null == sqsClient)
                 throw new Exception($"Failed to find SqsClient for Queue: [{queueName}]");
@@ -202,7 +209,10 @@ public class ClientAndServerFixture : IDisposable
 
         public void Populate(AWSOptions awsOptions)
         {
-            awsOptions.Credentials = new BasicAWSCredentials(_settings.AWS.AWS_ACCESS_KEY_ID, _settings.AWS.AWS_SECRET_ACCESS_KEY);
+            awsOptions.Credentials = new BasicAWSCredentials(
+                _settings.AWS.AWS_ACCESS_KEY_ID,
+                _settings.AWS.AWS_SECRET_ACCESS_KEY
+            );
             awsOptions.Region = RegionEndpoint.GetBySystemName(_settings.AWS.AWS_REGION);
         }
     }

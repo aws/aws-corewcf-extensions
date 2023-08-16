@@ -121,11 +121,13 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     /// </summary>
     [ExcludeFromCodeCoverage]
     protected override void OnOpen(TimeSpan timeout) { }
+
     /// <summary>
     /// no-op
     /// </summary>
     [ExcludeFromCodeCoverage]
     protected override void OnAbort() { }
+
     /// <summary>
     /// no-op
     /// </summary>
@@ -180,5 +182,4 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     }
 
     #endregion
-
 }

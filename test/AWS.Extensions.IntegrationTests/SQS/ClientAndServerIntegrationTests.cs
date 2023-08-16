@@ -32,14 +32,17 @@ public class ClientAndServerIntegrationTests : IDisposable
         // ARRANGE
         var successfulDispatchCallbackWasInvoked = false;
         var callbacks = new DispatchCallbacksCollection(
-            new Func<IServiceProvider, QueueMessageContext, Task>((_, _) =>
-            {
-                successfulDispatchCallbackWasInvoked = true; 
-                return Task.CompletedTask;
-            }),
-            (_, _) => Task.CompletedTask);
+            new Func<IServiceProvider, QueueMessageContext, Task>(
+                (_, _) =>
+                {
+                    successfulDispatchCallbackWasInvoked = true;
+                    return Task.CompletedTask;
+                }
+            ),
+            (_, _) => Task.CompletedTask
+        );
 
-        _clientAndServerFixture.Start(_output, dispatchCallbacks:callbacks);
+        _clientAndServerFixture.Start(_output, dispatchCallbacks: callbacks);
 
         var clientService = _clientAndServerFixture.Channel!;
         var sqsClient = _clientAndServerFixture.SqsClient!;
@@ -71,7 +74,7 @@ public class ClientAndServerIntegrationTests : IDisposable
         Assert.True(serverReceivedMessage);
 
         Assert.True(successfulDispatchCallbackWasInvoked);
-        
+
         await SqsAssert.QueueIsEmpty(sqsClient, queueName);
     }
 
@@ -84,10 +87,12 @@ public class ClientAndServerIntegrationTests : IDisposable
         var failureDispatchCallbackWasInvoked = false;
         var callbacks = new DispatchCallbacksCollection(
             new Func<IServiceProvider, QueueMessageContext, Task>((_, _) => Task.CompletedTask),
-            (_, _) => {
+            (_, _) =>
+            {
                 failureDispatchCallbackWasInvoked = true;
                 return Task.CompletedTask;
-            });
+            }
+        );
 
         _clientAndServerFixture.Start(_output, queueName, callbacks);
 
@@ -117,7 +122,6 @@ public class ClientAndServerIntegrationTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task CanCreateQueue()
     {
@@ -132,12 +136,11 @@ public class ClientAndServerIntegrationTests : IDisposable
         var awsOptions = new AWSOptions();
         _clientAndServerFixture.AWSOptionsBuilder.Populate(awsOptions);
 
-        var createQueueRequest =
-            new CreateQueueRequest(queueName)
-                .WithDeadLetterQueue()
-                .WithKMSEncryption("kmsMasterKeyId");
+        var createQueueRequest = new CreateQueueRequest(queueName)
+            .WithDeadLetterQueue()
+            .WithKMSEncryption("kmsMasterKeyId");
 
-        await sqsClient.EnsureSQSQueue(awsOptions, createQueueRequest, new []{ fakeAwsAccountToAllow });
+        await sqsClient.EnsureSQSQueue(awsOptions, createQueueRequest, new[] { fakeAwsAccountToAllow });
 
         var queueUrlResult = await sqsClient.GetQueueUrlAsync(queueName);
 

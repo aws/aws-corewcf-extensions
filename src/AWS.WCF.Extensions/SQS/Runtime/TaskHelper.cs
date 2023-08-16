@@ -17,8 +17,8 @@ namespace AWS.WCF.Extensions.SQS.Runtime
         // In the EndMethod, you would use ToApmEnd<TResult> to ensure the correct exception handling
         // This will handle throwing exceptions in the correct place and ensure the IAsyncResult contains the provided
         // state object
-        public static IAsyncResult ToApm<T>(this Task<T> task, AsyncCallback callback, object state)
-            => ToApm<T>(new ValueTask<T>(task), callback, state);
+        public static IAsyncResult ToApm<T>(this Task<T> task, AsyncCallback callback, object state) =>
+            ToApm<T>(new ValueTask<T>(task), callback, state);
 
         /// <summary>
         /// Helper method to convert from Task async method to "APM" (IAsyncResult with Begin/End calls)
@@ -35,9 +35,7 @@ namespace AWS.WCF.Extensions.SQS.Runtime
                 // We use OnCompleted rather than ContinueWith in order to avoid running synchronously
                 // if the task has already completed by the time we get here.
                 // This will allocate a delegate and some extra data to add it as a TaskContinuation
-                valueTask.ConfigureAwait(false)
-                    .GetAwaiter()
-                    .OnCompleted(result.ExecuteCallback);
+                valueTask.ConfigureAwait(false).GetAwaiter().OnCompleted(result.ExecuteCallback);
             }
 
             return result;
@@ -58,9 +56,7 @@ namespace AWS.WCF.Extensions.SQS.Runtime
                 // We use OnCompleted rather than ContinueWith in order to avoid running synchronously
                 // if the task has already completed by the time we get here.
                 // This will allocate a delegate and some extra data to add it as a TaskContinuation
-                task.ConfigureAwait(false)
-                    .GetAwaiter()
-                    .OnCompleted(result.ExecuteCallback);
+                task.ConfigureAwait(false).GetAwaiter().OnCompleted(result.ExecuteCallback);
             }
 
             return result;
@@ -138,11 +134,13 @@ namespace AWS.WCF.Extensions.SQS.Runtime
 
             // Calls the async callback with this as parameter
             public void ExecuteCallback() => _asyncCallback?.Invoke(this);
+
             public object AsyncState { get; }
 
-            WaitHandle IAsyncResult.AsyncWaitHandle => !CompletedSynchronously
-                ? ((IAsyncResult)_task.AsTask()).AsyncWaitHandle
-                : throw new NotImplementedException();
+            WaitHandle IAsyncResult.AsyncWaitHandle =>
+                !CompletedSynchronously
+                    ? ((IAsyncResult)_task.AsTask()).AsyncWaitHandle
+                    : throw new NotImplementedException();
 
             public bool CompletedSynchronously { get; }
             public bool IsCompleted => _task.IsCompleted;

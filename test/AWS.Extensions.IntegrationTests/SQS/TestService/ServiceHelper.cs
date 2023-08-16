@@ -14,7 +14,7 @@ public static class ServiceHelper
         where TStartup : class =>
         WebHost
             .CreateDefaultBuilder(Array.Empty<string>())
-            .ConfigureServices(configureAction ?? ( _ => {}))
+            .ConfigureServices(configureAction ?? (_ => { }))
             .UseKestrel(options =>
             {
                 options.Limits.MaxRequestBufferSize = null;

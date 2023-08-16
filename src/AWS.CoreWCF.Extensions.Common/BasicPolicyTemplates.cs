@@ -4,6 +4,7 @@ public class BasicPolicyTemplates
 {
     private const string AccountIdPlaceholder = "ACCOUNT_ID_PLACEHOLDER";
     private const string SQSArnPlaceholder = "SQS_ARN_PLACEHOLDER";
+
     /// <remarks>
     /// Must use "sqs:*" to get around limit of 7 actions in IAM Policies.
     /// Currently, needs 8 actions.
