@@ -42,7 +42,7 @@ public class SnsCallbackIntegrationTests : IDisposable
 
         var successQueueUrl = (
             await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(
-                _clientAndServerFixture.Settings.AWS.SUCCESS_QUEUE_NAME
+                ClientAndServerFixture.SnsNotificationSuccessQueue
             )
         ).QueueUrl;
 

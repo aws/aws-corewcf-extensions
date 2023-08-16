@@ -38,6 +38,7 @@ public class ClientAndServerFixture : IDisposable
 
     public const string QueueWithDefaultSettings = "CoreWCFExtensionsDefaultSettingsQueue";
     public const string FifoQueueName = "CoreWCFExtensionsTest.fifo";
+    public const string SnsNotificationSuccessQueue = "CoreWCF-SNSSuccessQueue";
 
     public IWebHost? Host { get; private set; }
     public ILoggingService? Channel { get; private set; }
