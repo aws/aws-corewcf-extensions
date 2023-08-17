@@ -49,9 +49,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     public override T GetProperty<T>(BindingContext context)
     {
         if (context == null)
-        {
             throw new ArgumentNullException(nameof(context));
-        }
 
         return context.GetInnerProperty<T>();
     }
@@ -59,9 +57,7 @@ public class AwsSqsTransportBindingElement : TransportBindingElement
     public override IChannelFactory<TChannel> BuildChannelFactory<TChannel>(BindingContext context)
     {
         if (context == null)
-        {
             throw new ArgumentNullException(nameof(context));
-        }
 
         return (IChannelFactory<TChannel>)(object)new SqsChannelFactory(this, context);
     }

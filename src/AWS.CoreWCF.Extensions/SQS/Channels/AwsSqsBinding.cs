@@ -1,4 +1,5 @@
-﻿using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
+﻿using System.Diagnostics.CodeAnalysis;
+using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using CoreWCF.Channels;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
@@ -32,6 +33,7 @@ public class AwsSqsBinding : Binding
     }
 
     /// <inheritdoc cref="AwsSqsTransportBindingElement.MaxReceivedMessageSize"/>
+    [ExcludeFromCodeCoverage]
     public long MaxMessageSize
     {
         get => _transport.MaxReceivedMessageSize;
@@ -46,5 +48,6 @@ public class AwsSqsBinding : Binding
     }
 
     /// <inheritdoc cref="AwsSqsTransportBindingElement.Scheme"/>
+    [ExcludeFromCodeCoverage]
     public override string Scheme => _transport.Scheme;
 }

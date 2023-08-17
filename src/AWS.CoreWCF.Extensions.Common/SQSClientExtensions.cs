@@ -22,9 +22,7 @@ public static class SQSClientExtensions
     {
         var statusCode = (int)response.HttpStatusCode;
         if (statusCode < 200 || statusCode >= 300)
-        {
             throw new HttpRequestException($"HttpStatusCode: {statusCode}");
-        }
     }
 
     public static async Task<IEnumerable<Amazon.SQS.Model.Message>> ReceiveMessagesAsync(

@@ -7,7 +7,6 @@ using AWS.Extensions.IntegrationTests.Common;
 using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Queue.Common;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -117,7 +116,7 @@ public class ClientAndServerIntegrationTests : IDisposable
         }
         finally
         {
-            var queueUrlResponse = await _clientAndServerFixture.SqsClient.GetQueueUrlAsync(queueName);
+            var queueUrlResponse = await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(queueName);
             await _clientAndServerFixture.SqsClient.DeleteQueueAsync(queueUrlResponse.QueueUrl);
         }
     }
@@ -134,7 +133,7 @@ public class ClientAndServerIntegrationTests : IDisposable
         var fakeAwsAccountToAllow = "123456789010";
 
         var awsOptions = new AWSOptions();
-        _clientAndServerFixture.AWSOptionsBuilder.Populate(awsOptions);
+        _clientAndServerFixture.AWSOptionsBuilder!.Populate(awsOptions);
 
         var createQueueRequest = new CreateQueueRequest(queueName)
             .WithDeadLetterQueue()

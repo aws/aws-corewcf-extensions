@@ -1,4 +1,5 @@
-﻿using System.ServiceModel;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceModel;
 using System.ServiceModel.Channels;
 using AWS.WCF.Extensions.SQS.Runtime;
 
@@ -27,14 +28,9 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
             );
         }
 
-        if (messageEncoderBindingElements.Count() == 1)
-        {
-            MessageEncoderFactory = messageEncoderBindingElements.First().CreateMessageEncoderFactory();
-        }
-        else
-        {
-            MessageEncoderFactory = SqsConstants.DefaultMessageEncoderFactory;
-        }
+        MessageEncoderFactory = messageEncoderBindingElements.Any()
+            ? messageEncoderBindingElements.First().CreateMessageEncoderFactory()
+            : SqsConstants.DefaultMessageEncoderFactory;
     }
 
     public override T GetProperty<T>()
@@ -52,9 +48,8 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
     /// <summary>
     /// Create a new Udp Channel. Supports IOutputChannel.
     /// </summary>
-    /// <typeparam name="TChannel">The type of Channel to create (e.g. IOutputChannel)</typeparam>
     /// <param name="queueUrl">The address of the remote endpoint</param>
-    /// <returns></returns>
+    /// <param name="via"></param>
     protected override IOutputChannel OnCreateChannel(EndpointAddress queueUrl, Uri via)
     {
         return new SqsOutputChannel(this, _bindingElement.SqsClient, queueUrl, via, MessageEncoderFactory.Encoder);
@@ -65,16 +60,19 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
     /// </summary>
     protected override void OnOpen(TimeSpan timeout) { }
 
+    [ExcludeFromCodeCoverage]
     protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
     {
         return Task.CompletedTask.ToApm(callback, state);
     }
 
+    [ExcludeFromCodeCoverage]
     protected override void OnEndOpen(IAsyncResult result)
     {
         result.ToApmEnd();
     }
 
+    [ExcludeFromCodeCoverage]
     protected override void OnClosed()
     {
         base.OnClosed();

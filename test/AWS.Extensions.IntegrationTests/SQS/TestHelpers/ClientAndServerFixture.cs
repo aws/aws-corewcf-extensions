@@ -1,4 +1,5 @@
-﻿using System.ServiceModel;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceModel;
 using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
@@ -32,9 +33,10 @@ public class ClientAndServerCollectionFixture : ICollectionFixture<ClientAndServ
     // ICollectionFixture<> interfaces.
 }
 
+[SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
 public class ClientAndServerFixture : IDisposable
 {
-    private ChannelFactory<ILoggingService> _factory;
+    private ChannelFactory<ILoggingService>? _factory;
 
     public const string QueueWithDefaultSettings = "CoreWCFExtensionsDefaultSettingsQueue";
     public const string FifoQueueName = "CoreWCFExtensionsTest.fifo";
@@ -43,11 +45,11 @@ public class ClientAndServerFixture : IDisposable
     public IWebHost? Host { get; private set; }
     public ILoggingService? Channel { get; private set; }
     public IAmazonSQS? SqsClient { get; private set; }
-    public string QueueName { get; private set; }
+    public string? QueueName { get; private set; }
 
-    public Settings Settings { get; private set; }
+    public Settings? Settings { get; private set; }
 
-    public IntegrationTestAWSOptionsBuilder AWSOptionsBuilder { get; private set; }
+    public IntegrationTestAWSOptionsBuilder? AWSOptionsBuilder { get; private set; }
 
     public void Start(
         ITestOutputHelper testOutputHelper,
@@ -86,8 +88,12 @@ public class ClientAndServerFixture : IDisposable
 
         Host.Start();
 
-        CreateAndOpenClientChannel();
-        //EnsureQueueIsEmpty();
+        // Start Client
+        var sqsBinding = new AWS.WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueName);
+        var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
+        _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
+        Channel = _factory.CreateChannel();
+        ((System.ServiceModel.Channels.IChannel)Channel).Open();
     }
 
     public void Dispose()
@@ -96,15 +102,11 @@ public class ClientAndServerFixture : IDisposable
         {
             Host.Dispose();
         }
-    }
 
-    private void CreateAndOpenClientChannel()
-    {
-        var sqsBinding = new AWS.WCF.Extensions.SQS.AwsSqsBinding(SqsClient, QueueName);
-        var endpointAddress = new EndpointAddress(new Uri(sqsBinding.QueueUrl));
-        _factory = new ChannelFactory<ILoggingService>(sqsBinding, endpointAddress);
-        Channel = _factory.CreateChannel();
-        ((System.ServiceModel.Channels.IChannel)Channel).Open();
+        if (Channel != null)
+        {
+            ((System.ServiceModel.Channels.IChannel)Channel).Close();
+        }
     }
 
     private class Startup

@@ -85,17 +85,9 @@ public class SqsOutputChannel : ChannelBase, IOutputChannel
     public override T GetProperty<T>()
     {
         if (typeof(T) == typeof(IOutputChannel))
-        {
             return (T)(object)this;
-        }
 
-        T messageEncoderProperty = this._encoder.GetProperty<T>();
-        if (messageEncoderProperty != null)
-        {
-            return messageEncoderProperty;
-        }
-
-        return base.GetProperty<T>();
+        return _encoder.GetProperty<T>() ?? base.GetProperty<T>();
     }
 
     /// <summary>

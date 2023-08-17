@@ -9,7 +9,7 @@ namespace AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 
 public delegate Task NotificationDelegate(IServiceProvider services, QueueMessageContext context);
 
-public class DispatchCallbackFactory
+public static class DispatchCallbackFactory
 {
     public static NotificationDelegate GetDefaultSuccessNotificationCallbackWithSns(string topicArn)
     {
