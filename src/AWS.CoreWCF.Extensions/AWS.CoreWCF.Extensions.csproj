@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
 	<OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.4.14" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.7" />
     <PackageReference Include="CoreWCF.Primitives" Version="1.4.0-preview1" />
     <PackageReference Include="CoreWCF.Queue" Version="1.4.0-preview1" />
   </ItemGroup>

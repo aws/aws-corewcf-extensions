@@ -61,8 +61,9 @@ public class BasicPolicyTemplates
 
     private static string GetAccountIdFromQueueArn(string queueArn)
     {
-        var arnParts = queueArn.Split(":");
-        return arnParts[^2];
+        var arnParts = queueArn.Split(':');
+        // get 2nd from the end
+        return arnParts.Reverse().Skip(1).First();
     }
 
     public static string GetBasicKMSPolicy(string accountId, IEnumerable<string>? accountIdsToAllow = null)
