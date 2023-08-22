@@ -8,14 +8,14 @@ internal class AwsSqsReceiveContext : ReceiveContext
 {
     private readonly IServiceProvider _services;
 
-    private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
+    private readonly IDispatchCallbacksCollection? _dispatchCallbacksCollection;
     private readonly ISQSMessageProvider _sqsMessageProvider;
     private readonly string _queueName;
     private readonly AwsSqsMessageContext _sqsMessageContext;
 
     public AwsSqsReceiveContext(
         IServiceProvider services,
-        IDispatchCallbacksCollection dispatchCallbacksCollection,
+        IDispatchCallbacksCollection? dispatchCallbacksCollection,
         ISQSMessageProvider sqsMessageProvider,
         string queueName,
         AwsSqsMessageContext sqsMessageContext
@@ -30,15 +30,19 @@ internal class AwsSqsReceiveContext : ReceiveContext
 
     protected override async Task OnCompleteAsync(CancellationToken token)
     {
-        var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForSuccessfulDispatch;
-        await notificationCallback.Invoke(_services, _sqsMessageContext);
+        var notificationCallback = _dispatchCallbacksCollection?.NotificationDelegateForSuccessfulDispatch;
+
+        if (null != notificationCallback)
+            await notificationCallback.Invoke(_services, _sqsMessageContext);
 
         await _sqsMessageProvider.DeleteSqsMessageAsync(_queueName, _sqsMessageContext.MessageReceiptHandle);
     }
 
     protected override async Task OnAbandonAsync(CancellationToken token)
     {
-        var notificationCallback = _dispatchCallbacksCollection.NotificationDelegateForFailedDispatch;
-        await notificationCallback.Invoke(_services, _sqsMessageContext);
+        var notificationCallback = _dispatchCallbacksCollection?.NotificationDelegateForFailedDispatch;
+
+        if (null != notificationCallback)
+            await notificationCallback.Invoke(_services, _sqsMessageContext);
     }
 }
