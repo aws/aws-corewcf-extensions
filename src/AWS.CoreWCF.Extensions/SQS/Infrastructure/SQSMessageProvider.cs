@@ -6,14 +6,20 @@ using Microsoft.Extensions.Logging;
 
 namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
-public class SQSMessageProvider
+/// <remarks>
+/// Requires a custom DI Factory.  See <see cref="SQSServiceCollectionExtensions.AddAmazonSQSClient"/>
+/// </remarks>
+internal class SQSMessageProvider
 {
     private readonly ILogger<SQSMessageProvider> _logger;
     private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes;
     private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients;
 
-    public SQSMessageProvider(IEnumerable<NamedSQSClient> namedSQSClients, ILogger<SQSMessageProvider> logger)
+    public SQSMessageProvider(
+        IEnumerable<NamedSQSClientCollection> namedSQSClientCollections,
+        ILogger<SQSMessageProvider> logger
+    )
     {
         _logger = logger;
 
@@ -21,6 +27,8 @@ public class SQSMessageProvider
         _queueMessageCache = new ConcurrentDictionary<string, ConcurrentQueue<Message>>();
         _cacheMutexes = new ConcurrentDictionary<string, SemaphoreSlim>();
         _namedSQSClients = new ConcurrentDictionary<string, NamedSQSClient>();
+
+        var namedSQSClients = namedSQSClientCollections.SelectMany(x => x).ToList();
 
         foreach (var namedSQSClient in namedSQSClients)
         {

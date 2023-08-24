@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -25,6 +26,7 @@ public class XUnitLoggingProvider : ILoggerProvider, ILogger
         _testOutputHelper.WriteLine($"[{logLevel}]: {formatter(state, exception)}");
     }
 
+    [DebuggerStepThrough]
     public ILogger CreateLogger(string categoryName) => this;
 
     public bool IsEnabled(LogLevel logLevel) => true;

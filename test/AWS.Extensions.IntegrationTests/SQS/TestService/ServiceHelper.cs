@@ -3,18 +3,51 @@ using Microsoft.AspNetCore.Hosting;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using AWS.Extensions.IntegrationTests.Common;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace AWS.Extensions.IntegrationTests.SQS.TestService;
 
 [ExcludeFromCodeCoverage]
 public static class ServiceHelper
 {
-    public static IWebHostBuilder CreateServiceHost<TStartup>(Action<IServiceCollection>? configureAction = null)
-        where TStartup : class =>
-        WebHost
+    /// <summary>
+    /// Takes care of the plumbing to initialize a Test WebServer
+    /// for Integration Tests
+    /// </summary>
+    /// <param name="configureServices">
+    /// Equivalent to the Startup classes ConfigureServices(<see cref="IServiceCollection"/> services) method.
+    /// </param>
+    /// <param name="configure">
+    /// Equivalent to the Startup classes Configure(<see cref="IApplicationBuilder"/> app) method.
+    /// </param>
+    /// <param name="testOutputHelper">
+    /// Pass this in to wire up a <see cref="XUnitLoggingProvider"/>
+    /// </param>
+    /// <returns></returns>
+    public static IWebHostBuilder CreateServiceHost(
+        Action<IServiceCollection> configureServices,
+        Action<IApplicationBuilder> configure,
+        ITestOutputHelper? testOutputHelper = null
+    )
+    {
+        return WebHost
             .CreateDefaultBuilder(Array.Empty<string>())
-            .ConfigureServices(configureAction ?? (_ => { }))
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton(new ConfigureStartup { Configure = configure });
+
+                if (null != testOutputHelper)
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddProvider(new XUnitLoggingProvider(testOutputHelper));
+                    });
+
+                configureServices(services);
+            })
             .UseKestrel(options =>
             {
                 options.Limits.MaxRequestBufferSize = null;
@@ -33,5 +66,22 @@ public static class ServiceHelper
                     }
                 );
             })
-            .UseStartup<TStartup>();
+            .UseStartup<InfrastructureTestStartup>();
+    }
+
+    private class InfrastructureTestStartup
+    {
+        public void ConfigureServices(IServiceCollection services) { }
+
+        public void Configure(IApplicationBuilder app)
+        {
+            var configureStartup = app.ApplicationServices.GetRequiredService<ConfigureStartup>();
+            configureStartup.Configure?.Invoke(app);
+        }
+    }
+
+    private class ConfigureStartup
+    {
+        public Action<IApplicationBuilder>? Configure { get; set; }
+    }
 }

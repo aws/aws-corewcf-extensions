@@ -130,16 +130,11 @@ public class ClientAndServerIntegrationTests : IDisposable
 
         var queueName = nameof(CanCreateQueue) + Guid.NewGuid();
 
-        var fakeAwsAccountToAllow = "123456789010";
-
-        var awsOptions = new AWSOptions();
-        _clientAndServerFixture.AWSOptionsBuilder!.Populate(awsOptions);
-
         var createQueueRequest = new CreateQueueRequest(queueName)
             .WithDeadLetterQueue()
             .WithKMSEncryption("kmsMasterKeyId");
 
-        await sqsClient.EnsureSQSQueue(awsOptions, createQueueRequest, new[] { fakeAwsAccountToAllow });
+        await sqsClient.EnsureSQSQueue(createQueueRequest);
 
         var queueUrlResult = await sqsClient.GetQueueUrlAsync(queueName);
 
@@ -152,6 +147,18 @@ public class ClientAndServerIntegrationTests : IDisposable
 
     public void Dispose()
     {
+        try
+        {
+            _clientAndServerFixture.SqsClient
+                ?.ClearQueues(
+                    ClientAndServerFixture.FifoQueueName,
+                    ClientAndServerFixture.QueueWithDefaultSettings,
+                    ClientAndServerFixture.SnsNotificationSuccessQueue
+                )
+                .Wait();
+        }
+        catch { }
+
         _clientAndServerFixture.Dispose();
     }
 }

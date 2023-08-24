@@ -28,31 +28,6 @@ public class BasicPolicyTemplates
   ]
 }}";
 
-    public const string BasicKMSPolicyTemplate =
-        $@"{{
-  ""Version"": ""2008-10-17"",
-  ""Id"": ""__default_policy_ID"",
-  ""Statement"": [
-    {{
-      ""Sid"": ""Allow use of key"",
-      ""Effect"": ""Allow"",
-      ""Principal"": {{
-        ""AWS"": [
-            ""{AccountIdPlaceholder}""
-        ]
-      }},
-      ""Action"": [
-        ""kms:Encrypt"",
-        ""kms:Decrypt"",
-        ""kms:ReEncrypt*"",
-        ""kms:GenerateDataKey*"",
-        ""kms:DescribeKey""
-      ],
-      ""Resource"": ""*""
-    }},
-  ]
-}}";
-
     public static string GetBasicSQSPolicy(string queueArn)
     {
         var accountId = GetAccountIdFromQueueArn(queueArn);
@@ -64,16 +39,5 @@ public class BasicPolicyTemplates
         var arnParts = queueArn.Split(':');
         // get 2nd from the end
         return arnParts.Reverse().Skip(1).First();
-    }
-
-    public static string GetBasicKMSPolicy(string accountId, IEnumerable<string>? accountIdsToAllow = null)
-    {
-        accountIdsToAllow ??= new List<string>();
-        accountIdsToAllow = accountIdsToAllow.Append(accountId);
-
-        var accountIdStrings = accountIdsToAllow.Select(id => @$"""{id}""");
-        var joinedAccountIdsToAllow = string.Join(", ", accountIdStrings);
-
-        return BasicKMSPolicyTemplate.Replace(AccountIdPlaceholder, joinedAccountIdsToAllow);
     }
 }

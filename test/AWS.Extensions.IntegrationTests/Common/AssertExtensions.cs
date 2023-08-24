@@ -6,7 +6,7 @@ using Xunit;
 namespace AWS.Extensions.IntegrationTests.Common;
 
 [ExcludeFromCodeCoverage]
-public class SqsAssert
+public static class SqsAssert
 {
     public static async Task QueueIsEmpty(
         IAmazonSQS sqsClient,
@@ -41,5 +41,14 @@ public class SqsAssert
             await Task.Delay(retryDelayInSeconds * 1000);
         }
         Assert.True(queueIsEmpty);
+    }
+
+    public static async Task ClearQueues(this IAmazonSQS sqsClient, params string[] queueNames)
+    {
+        foreach (var queue in queueNames)
+        {
+            var queueUrl = (await sqsClient.GetQueueUrlAsync(queue)).QueueUrl;
+            await sqsClient.PurgeQueueAsync(queueUrl);
+        }
     }
 }

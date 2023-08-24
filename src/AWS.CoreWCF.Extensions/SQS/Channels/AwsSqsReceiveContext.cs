@@ -4,7 +4,7 @@ using CoreWCF.Channels;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
-public class AwsSqsReceiveContext : ReceiveContext
+internal class AwsSqsReceiveContext : ReceiveContext
 {
     private readonly IServiceProvider _services;
 

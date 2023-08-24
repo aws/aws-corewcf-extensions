@@ -7,6 +7,7 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
+using AWS.CoreWCF.Extensions.SQS.Channels;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
 using AWS.Extensions.IntegrationTests.Common;
@@ -14,7 +15,6 @@ using AWS.Extensions.IntegrationTests.SQS.TestService;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common.Configuration;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -76,13 +76,55 @@ public class ClientAndServerFixture : IDisposable
         );
 
         Host = ServiceHelper
-            .CreateServiceHost<Startup>(
-                services =>
+            .CreateServiceHost(
+                configureServices: services =>
                     services
-                        .AddSingleton(AWSOptionsBuilder)
-                        .AddSingleton(new DefaultQueueNameProvider { QueueName = queueName })
-                        .AddSingleton<IDispatchCallbacksCollection>(dispatchCallbacks)
-                        .AddLogging(builder => builder.AddProvider(new XUnitLoggingProvider(testOutputHelper)))
+                        .AddDefaultAWSOptions(AWSOptionsBuilder.Build())
+                        .AddSingleton<ILogger>(NullLogger.Instance)
+                        .AddAWSService<IAmazonSimpleNotificationService>()
+                        .AddServiceModelServices()
+                        .AddQueueTransport()
+                        .AddSQSClient(QueueName)
+                        .AddSQSClient(FifoQueueName),
+                configure: app =>
+                {
+                    app.UseServiceModel(services =>
+                    {
+                        services.AddService<LoggingService>();
+                        services.AddSQSServiceEndpoint<LoggingService, ILoggingService>(
+                            app,
+                            new AwsSqsBinding
+                            {
+                                QueueName = QueueName,
+                                DispatchCallbacksCollection = dispatchCallbacks
+                            },
+                            queueInitializer: async (sqsClient, _) =>
+                            {
+                                await sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName).SetDefaultValues());
+                            }
+                        );
+                        services.AddSQSServiceEndpoint<LoggingService, ILoggingService>(
+                            app,
+                            new AwsSqsBinding
+                            {
+                                QueueName = FifoQueueName,
+                                DispatchCallbacksCollection = dispatchCallbacks
+                            },
+                            queueInitializer: async (sqsClient, _) =>
+                            {
+                                (
+                                    await sqsClient.EnsureSQSQueue(
+                                        new CreateQueueRequest(queueName)
+                                            .SetDefaultValues()
+                                            .WithFIFO()
+                                            .WithManagedServerSideEncryption()
+                                    )
+                                ).WithBasicPolicy(queueName);
+                            }
+                        );
+                    });
+                },
+                testOutputHelper: testOutputHelper
             )
             .Build();
 
@@ -109,98 +151,6 @@ public class ClientAndServerFixture : IDisposable
         }
     }
 
-    private class Startup
-    {
-        private readonly IntegrationTestAWSOptionsBuilder _awsOptionsBuilder;
-        private readonly DefaultQueueNameProvider _defaultQueueNameProvider;
-        private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
-
-        public Startup(
-            IntegrationTestAWSOptionsBuilder awsOptionsBuilder,
-            DefaultQueueNameProvider defaultQueueNameProvider,
-            IDispatchCallbacksCollection dispatchCallbacksCollection
-        )
-        {
-            _awsOptionsBuilder = awsOptionsBuilder;
-            _defaultQueueNameProvider = defaultQueueNameProvider;
-            _dispatchCallbacksCollection = dispatchCallbacksCollection;
-        }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddServiceModelServices();
-            services.AddSingleton<ILogger>(NullLogger.Instance);
-#if DEBUG
-            services.AddLogging(builder =>
-            {
-                builder.AddConsole();
-            });
-#endif
-
-            services.AddSQSClient(
-                _defaultQueueNameProvider.QueueName,
-                _awsOptionsBuilder.Populate,
-                (sqsClient, awsOptions, queueName) =>
-                {
-                    sqsClient.EnsureSQSQueue(awsOptions, new CreateQueueRequest(queueName).SetDefaultValues()).Wait();
-                }
-            );
-
-            services.AddSQSClient(
-                FifoQueueName,
-                _awsOptionsBuilder.Populate,
-                (sqsClient, awsOptions, queueName) =>
-                {
-                    sqsClient
-                        .EnsureSQSQueue(
-                            awsOptions,
-                            new CreateQueueRequest(queueName)
-                                .SetDefaultValues()
-                                .WithFIFO()
-                                .WithManagedServerSideEncryption()
-                        )
-                        .Result.WithBasicPolicy(queueName);
-                }
-            );
-
-            var awsOptions = new AWSOptions();
-            _awsOptionsBuilder.Populate(awsOptions);
-
-            services.AddDefaultAWSOptions(awsOptions);
-            services.AddAWSService<IAmazonSimpleNotificationService>();
-
-            services.AddQueueTransport();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            var queueName = _defaultQueueNameProvider.QueueName;
-
-            var sqsClient = app.ApplicationServices
-                .GetServices<NamedSQSClient>()
-                .FirstOrDefault(x => x.QueueName == queueName)
-                ?.SQSClient;
-
-            if (null == sqsClient)
-                throw new Exception($"Failed to find SqsClient for Queue: [{queueName}]");
-
-            var queueUrl = sqsClient.GetQueueUrlAsync(queueName).Result.QueueUrl;
-
-            app.UseServiceModel(services =>
-            {
-                services.AddService<LoggingService>();
-                services.AddServiceEndpoint<LoggingService, ILoggingService>(
-                    new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding
-                    {
-                        QueueName = queueName,
-                        DispatchCallbacksCollection = _dispatchCallbacksCollection
-                    },
-                    queueUrl
-                );
-            });
-        }
-    }
-
     public class IntegrationTestAWSOptionsBuilder
     {
         private readonly Settings _settings;
@@ -208,6 +158,13 @@ public class ClientAndServerFixture : IDisposable
         public IntegrationTestAWSOptionsBuilder(Settings settings)
         {
             _settings = settings;
+        }
+
+        public AWSOptions Build()
+        {
+            var options = new AWSOptions();
+            Populate(options);
+            return options;
         }
 
         public void Populate(AWSOptions awsOptions)
@@ -218,10 +175,5 @@ public class ClientAndServerFixture : IDisposable
             );
             awsOptions.Region = RegionEndpoint.GetBySystemName(_settings.AWS.AWS_REGION);
         }
-    }
-
-    public class DefaultQueueNameProvider
-    {
-        public string QueueName { get; set; }
     }
 }

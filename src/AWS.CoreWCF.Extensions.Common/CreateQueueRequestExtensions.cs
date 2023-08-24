@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using Amazon.SQS.Model;
 using Amazon.SQS;
 
@@ -73,14 +72,6 @@ public static class CreateQueueRequestExtensions
         return request;
     }
 
-    public static CreateQueueRequest WithoutKMSEncryption(this CreateQueueRequest request)
-    {
-        request.Attributes.Remove(QueueAttributeName.KmsMasterKeyId);
-        request.Attributes.Remove(QueueAttributeName.KmsDataKeyReusePeriodSeconds);
-
-        return request;
-    }
-
     private const int MaxSQSMessageSizeInBytes = 262144; // 2^18
     private const int MaxSQSMessageRetentionPeriodInSeconds = 345600; // 4 days
     private const int DefaultDelayInSeconds = 0;
@@ -125,18 +116,5 @@ public static class CreateQueueRequestExtensions
             return redrivePolicy;
         }
         return null;
-    }
-
-    public static bool IsUsingManagedServerSideEncryption(this CreateQueueRequest createQueueRequest)
-    {
-        return createQueueRequest.Attributes.TryGetValue(
-                QueueAttributeName.SqsManagedSseEnabled,
-                out var managedSseEnabled
-            ) && managedSseEnabled.Equals(true.ToString(), StringComparison.InvariantCultureIgnoreCase);
-    }
-
-    public static bool IsUsingKMS(this CreateQueueRequest createQueueRequest)
-    {
-        return createQueueRequest.GetRedrivePolicy() is not null;
     }
 }
