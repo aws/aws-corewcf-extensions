@@ -9,14 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.4.14" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.200.24" />
     <PackageReference Include="CoreWCF.Primitives" Version="1.4.0-preview1" />
     <PackageReference Include="CoreWCF.Queue" Version="1.4.0-preview1" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.2.95" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.25" />
     <!--<PackageReference Include="CoreWCF.Primitives" Version="1.1.0" />-->
   </ItemGroup>
   
