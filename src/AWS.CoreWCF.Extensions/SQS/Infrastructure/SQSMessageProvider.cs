@@ -12,9 +12,9 @@ namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 internal class SQSMessageProvider
 {
     private readonly ILogger<SQSMessageProvider> _logger;
-    private readonly ConcurrentDictionary<string, ConcurrentQueue<Message>> _queueMessageCache;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheMutexes;
-    private readonly ConcurrentDictionary<string, NamedSQSClient> _namedSQSClients;
+
+    private readonly ConcurrentDictionary<string, SQSMessageProviderQueueCacheEntry> _cache =
+        new(StringComparer.InvariantCultureIgnoreCase);
 
     public SQSMessageProvider(
         IEnumerable<NamedSQSClientCollection> namedSQSClientCollections,
@@ -23,41 +23,46 @@ internal class SQSMessageProvider
     {
         _logger = logger;
 
-        // TODO: handle visibility timeout if needed later via MemoryCache expiry
-        _queueMessageCache = new ConcurrentDictionary<string, ConcurrentQueue<Message>>();
-        _cacheMutexes = new ConcurrentDictionary<string, SemaphoreSlim>();
-        _namedSQSClients = new ConcurrentDictionary<string, NamedSQSClient>();
-
         var namedSQSClients = namedSQSClientCollections.SelectMany(x => x).ToList();
 
         foreach (var namedSQSClient in namedSQSClients)
         {
-            (namedSQSClient.SQSClient as AmazonSQSClient)?.SetCustomUserAgentSuffix();
+            if (null == namedSQSClient?.SQSClient || null == namedSQSClient?.QueueName)
+                throw new ArgumentException($"Invalid [{nameof(NamedSQSClient)}]");
 
-            var queueName = namedSQSClient.QueueName;
-            _queueMessageCache.TryAdd(queueName, new ConcurrentQueue<Message>());
-            _cacheMutexes.TryAdd(queueName, new SemaphoreSlim(1, 1));
-            _namedSQSClients.TryAdd(queueName, namedSQSClient);
+            // TODO: Harden
+            var queueUrl = namedSQSClient.SQSClient.GetQueueUrlAsync(namedSQSClient.QueueName).Result.QueueUrl;
+
+            var entry = new SQSMessageProviderQueueCacheEntry
+            {
+                QueueName = namedSQSClient.QueueName,
+                QueueUrl = queueUrl,
+                SQSClient = namedSQSClient.SQSClient
+            };
+
+            _cache.AddOrUpdate(namedSQSClient.QueueName, _ => entry, (_, _) => entry);
         }
     }
 
     public async Task<Amazon.SQS.Model.Message?> ReceiveMessageAsync(string queueName)
     {
-        var cachedMessages = _queueMessageCache[queueName];
-        var namedClient = _namedSQSClients[queueName];
-        var queueUrl = namedClient.QueueUrl;
+        if (!_cache.TryGetValue(queueName, out var cacheEntry))
+            throw new Exception("Todo");
+
+        var cachedMessages = cacheEntry.QueueMessages;
+        var sqsClient = cacheEntry.SQSClient;
+        var queueUrl = cacheEntry.QueueUrl;
+        var mutex = cacheEntry.Mutex;
 
         if (cachedMessages.IsEmpty)
         {
-            var mutex = _cacheMutexes[queueName];
-
             await mutex.WaitAsync().ConfigureAwait(false);
 
             if (cachedMessages.IsEmpty)
             {
                 try
                 {
-                    var newMessages = await namedClient.SQSClient.ReceiveMessagesAsync(queueUrl, _logger);
+                    var newMessages = await sqsClient.ReceiveMessagesAsync(queueUrl, _logger);
                     foreach (var newMessage in newMessages)
                     {
                         cachedMessages.Enqueue(newMessage);
@@ -80,9 +85,18 @@ internal class SQSMessageProvider
 
     public async Task DeleteSqsMessageAsync(string queueName, string receiptHandle)
     {
-        var namedClient = _namedSQSClients[queueName];
-        var queueUrl = namedClient.QueueUrl;
+        if (!_cache.TryGetValue(queueName, out var cacheEntry))
+            throw new Exception("Todo");
 
-        await namedClient.SQSClient.DeleteMessageAsync(queueUrl, receiptHandle, _logger);
+        await cacheEntry.SQSClient.DeleteMessageAsync(cacheEntry.QueueUrl, receiptHandle, _logger);
+    }
+
+    private class SQSMessageProviderQueueCacheEntry
+    {
+        public ConcurrentQueue<Message> QueueMessages { get; } = new();
+        public SemaphoreSlim Mutex { get; } = new SemaphoreSlim(1, 1);
+        public string QueueName { get; set; }
+        public IAmazonSQS SQSClient { get; set; }
+        public string QueueUrl { get; set; }
     }
 }

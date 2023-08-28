@@ -88,39 +88,32 @@ public class ClientAndServerFixture : IDisposable
                         .AddSQSClient(FifoQueueName),
                 configure: app =>
                 {
+                    // OPTION B:
+                    // 1.find the NamedSqsClient associated with QueueName
+                    // 2. use the SQSClient to make sdk calls
+                    // tweak: remove NamedSQSClient.QueueUrl to make it clear that queueUrl should
+                    // not be resolved eagerly.
+                    var queueUrl = app.EnsureSqsQueue(QueueName);
+                    var fifoQueueUrl = app.EnsureSqsQueue(FifoQueueName);
+
                     app.UseServiceModel(services =>
                     {
                         services.AddService<LoggingService>();
-                        services.AddSQSServiceEndpoint<LoggingService, ILoggingService>(
-                            app,
+                        services.AddServiceEndpoint<LoggingService, ILoggingService>(
                             new AwsSqsBinding
                             {
                                 QueueName = QueueName,
                                 DispatchCallbacksCollection = dispatchCallbacks
                             },
-                            queueInitializer: async (sqsClient, _) =>
-                            {
-                                await sqsClient.EnsureSQSQueue(new CreateQueueRequest(queueName).SetDefaultValues());
-                            }
+                            queueUrl
                         );
-                        services.AddSQSServiceEndpoint<LoggingService, ILoggingService>(
-                            app,
+                        services.AddServiceEndpoint<LoggingService, ILoggingService>(
                             new AwsSqsBinding
                             {
                                 QueueName = FifoQueueName,
                                 DispatchCallbacksCollection = dispatchCallbacks
                             },
-                            queueInitializer: async (sqsClient, _) =>
-                            {
-                                (
-                                    await sqsClient.EnsureSQSQueue(
-                                        new CreateQueueRequest(queueName)
-                                            .SetDefaultValues()
-                                            .WithFIFO()
-                                            .WithManagedServerSideEncryption()
-                                    )
-                                ).WithBasicPolicy(queueName);
-                            }
+                            fifoQueueUrl
                         );
                     });
                 },

@@ -1,6 +1,6 @@
 ﻿using Amazon.SQS;
-using AWS.CoreWCF.Extensions.SQS.Channels;
-using CoreWCF.Configuration;
+using Amazon.SQS.Model;
+using AWS.CoreWCF.Extensions.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,54 +46,37 @@ public static class SQSServiceCollectionExtensions
         {
             var sqsClient = sqsClientBuilder(serviceProvider);
 
+            (sqsClient as AmazonSQSClient)?.SetCustomUserAgentSuffix();
+
             var namedSqsClients = new NamedSQSClientCollection(
-                queueNames.Select(queueName => new NamedSQSClient(queueName, sqsClient))
+                queueNames.Select(queueName => new NamedSQSClient { SQSClient = sqsClient, QueueName = queueName })
             );
 
             return namedSqsClients;
         });
     }
 
-    public static IServiceBuilder AddSQSServiceEndpoint<TService, TContract>(
-        this IServiceBuilder serviceBuilder,
-        IApplicationBuilder app,
-        AwsSqsBinding awsSqsBinding,
-        Func<IAmazonSQS, string, Task>? queueInitializer = null
+    public static string EnsureSqsQueue(
+        this IApplicationBuilder builder,
+        string queueName,
+        CreateQueueRequest? createQueueRequest = null
     )
     {
-        return AddSQSServiceEndpoint<TService, TContract>(
-            serviceBuilder,
-            app.ApplicationServices,
-            awsSqsBinding,
-            queueInitializer
-        );
-    }
-
-    public static IServiceBuilder AddSQSServiceEndpoint<TService, TContract>(
-        this IServiceBuilder serviceBuilder,
-        IServiceProvider serviceProvider,
-        AwsSqsBinding awsSqsBinding,
-        Func<IAmazonSQS, string, Task>? queueInitializer = null
-    )
-    {
-        if (string.IsNullOrEmpty(awsSqsBinding.QueueName))
-            throw new ArgumentException("QueueName is required", nameof(awsSqsBinding));
-
-        var matchingNamedSQSClient = serviceProvider
+        // TODO Harden
+        var sqsClient = builder.ApplicationServices
             .GetServices<NamedSQSClientCollection>()
             .SelectMany(x => x)
-            .FirstOrDefault(x => x.QueueName == awsSqsBinding.QueueName);
+            .FirstOrDefault(x => string.Equals(x.QueueName, queueName, StringComparison.InvariantCultureIgnoreCase))
+            ?.SQSClient;
 
-        if (null == matchingNamedSQSClient)
-            throw new ArgumentException(
-                $"Invalid Binding: [{awsSqsBinding.QueueName}] must first be registered inside ${nameof(serviceProvider)} "
-                    + $"via {nameof(SQSServiceCollectionExtensions)}.{nameof(AddSQSClient)}"
-            );
+        createQueueRequest ??= new CreateQueueRequest(queueName);
 
-        matchingNamedSQSClient.Initialize(queueInitializer).Wait();
+        // TODO Harden
+        sqsClient.EnsureSQSQueue(createQueueRequest);
 
-        serviceBuilder.AddServiceEndpoint<TService, TContract>(awsSqsBinding, matchingNamedSQSClient.QueueUrl);
+        // TODO Harden
+        var queueUrl = sqsClient.GetQueueUrlAsync(queueName).Result;
 
-        return serviceBuilder;
+        return queueUrl.QueueUrl;
     }
 }
