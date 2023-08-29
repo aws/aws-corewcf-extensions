@@ -1,10 +1,12 @@
-﻿using System.ServiceModel.Channels;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceModel.Channels;
 using Amazon.SQS;
 
 namespace AWS.WCF.Extensions.SQS;
 
 public class AwsSqsBinding : Binding
 {
+    [ExcludeFromCodeCoverage]
     public override string Scheme => SqsConstants.Scheme;
 
     /// <summary>

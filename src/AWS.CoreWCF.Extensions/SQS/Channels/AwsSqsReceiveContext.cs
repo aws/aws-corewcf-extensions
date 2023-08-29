@@ -9,14 +9,14 @@ internal class AwsSqsReceiveContext : ReceiveContext
     private readonly IServiceProvider _services;
 
     private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
-    private readonly SQSMessageProvider _sqsMessageProvider;
+    private readonly ISQSMessageProvider _sqsMessageProvider;
     private readonly string _queueName;
     private readonly AwsSqsMessageContext _sqsMessageContext;
 
     public AwsSqsReceiveContext(
         IServiceProvider services,
         IDispatchCallbacksCollection dispatchCallbacksCollection,
-        SQSMessageProvider sqsMessageProvider,
+        ISQSMessageProvider sqsMessageProvider,
         string queueName,
         AwsSqsMessageContext sqsMessageContext
     )

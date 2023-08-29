@@ -1,4 +1,6 @@
-﻿using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
+﻿using Amazon.SQS.Model;
+using AWS.CoreWCF.Extensions.Common;
+using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,7 +38,11 @@ public class SnsCallbackIntegrationTests : IDisposable
         // Fixture will automatically setup SNS callbacks
         // as long as the appsettings.test.json is populated with valid
         // sns topic arns
-        _clientAndServerFixture.Start(_output, coreWcfQueueName);
+        _clientAndServerFixture.Start(
+            _output,
+            coreWcfQueueName,
+            new CreateQueueRequest(coreWcfQueueName).SetDefaultValues()
+        );
 
         var clientService = _clientAndServerFixture.Channel!;
 

@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Amazon.Extensions.NETCore.Setup;
+using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
@@ -7,6 +7,7 @@ using AWS.Extensions.IntegrationTests.Common;
 using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Queue.Common;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,8 +26,10 @@ public class ClientAndServerIntegrationTests : IDisposable
         _clientAndServerFixture = clientAndServerFixture;
     }
 
-    [Fact]
-    public async Task ServerReadsAndDispatchesMessageFromSqs()
+    [Theory]
+    [InlineData(ClientAndServerFixture.QueueWithDefaultSettings)]
+    [InlineData(ClientAndServerFixture.FifoQueueName)]
+    public async Task ServerReadsAndDispatchesMessageFromSqs(string queueName)
     {
         // ARRANGE
         var successfulDispatchCallbackWasInvoked = false;
@@ -41,11 +44,15 @@ public class ClientAndServerIntegrationTests : IDisposable
             (_, _) => Task.CompletedTask
         );
 
-        _clientAndServerFixture.Start(_output, dispatchCallbacks: callbacks);
+        _clientAndServerFixture.Start(
+            _output,
+            queueName: queueName,
+            createQueue: null, // standard queues are created via cdk
+            dispatchCallbacks: callbacks
+        );
 
         var clientService = _clientAndServerFixture.Channel!;
         var sqsClient = _clientAndServerFixture.SqsClient!;
-        var queueName = ClientAndServerFixture.QueueWithDefaultSettings;
 
         // make sure queue is starting empty
         await SqsAssert.QueueIsEmpty(sqsClient, queueName);
@@ -78,6 +85,59 @@ public class ClientAndServerIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task FailedMessagesGoToDeadLetterQueue()
+    {
+        // ARRANGE
+        var queueName = nameof(FailedMessagesGoToDeadLetterQueue) + DateTime.Now.Ticks;
+
+        var foundMessageInDeadLetterQueue = false;
+
+        _clientAndServerFixture.Start(
+            _output,
+            queueName,
+            new CreateQueueRequest(queueName)
+                .SetDefaultValues()
+                .SetAttribute(QueueAttributeName.VisibilityTimeout, "1")
+                .WithDeadLetterQueue(maxReceiveCount: 1),
+            dispatchCallbacks: new DispatchCallbacksCollection()
+        );
+
+        var dlqName = $"{queueName}-DLQ";
+        var dlqUrl = (await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(dlqName)).QueueUrl;
+
+        var clientService = _clientAndServerFixture.Channel!;
+
+        // ACT
+        clientService.CauseFailure();
+
+        // poll for up to 20 seconds
+        for (var polling = 0; polling < 40; polling++)
+        {
+            var queueDetails = await _clientAndServerFixture.SqsClient.GetQueueAttributesAsync(
+                dlqUrl,
+                new List<string> { QueueAttributeName.ApproximateNumberOfMessages }
+            );
+
+            foundMessageInDeadLetterQueue = queueDetails.ApproximateNumberOfMessages > 0;
+
+            if (foundMessageInDeadLetterQueue)
+                break;
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        }
+
+        // ASSERT
+        try
+        {
+            foundMessageInDeadLetterQueue.ShouldBeTrue();
+        }
+        finally
+        {
+            await DeleteQueue(queueName);
+        }
+    }
+
+    [Fact]
     public async Task ServiceFaultTriggersFailureCallback()
     {
         // ARRANGE
@@ -93,7 +153,12 @@ public class ClientAndServerIntegrationTests : IDisposable
             }
         );
 
-        _clientAndServerFixture.Start(_output, queueName, callbacks);
+        _clientAndServerFixture.Start(
+            _output,
+            queueName,
+            new CreateQueueRequest(queueName).SetDefaultValues().WithDeadLetterQueue(),
+            callbacks
+        );
 
         var clientService = _clientAndServerFixture.Channel!;
 
@@ -112,37 +177,90 @@ public class ClientAndServerIntegrationTests : IDisposable
         // ASSERT
         try
         {
-            Assert.True(failureDispatchCallbackWasInvoked);
+            failureDispatchCallbackWasInvoked.ShouldBeTrue();
         }
         finally
         {
-            var queueUrlResponse = await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(queueName);
-            await _clientAndServerFixture.SqsClient.DeleteQueueAsync(queueUrlResponse.QueueUrl);
+            await DeleteQueue(queueName);
         }
     }
 
     [Fact]
     public async Task CanCreateQueue()
     {
-        _clientAndServerFixture.Start(_output);
-
-        var sqsClient = _clientAndServerFixture.SqsClient!;
-
         var queueName = nameof(CanCreateQueue) + Guid.NewGuid();
+        _clientAndServerFixture.Start(
+            _output,
+            queueName,
+            new CreateQueueRequest(queueName).WithDeadLetterQueue().WithKMSEncryption("kmsMasterKeyId")
+        );
 
-        var createQueueRequest = new CreateQueueRequest(queueName)
-            .WithDeadLetterQueue()
-            .WithKMSEncryption("kmsMasterKeyId");
+        var queueUrlResult = await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(queueName);
 
-        await sqsClient.EnsureSQSQueue(createQueueRequest);
+        queueUrlResult?.QueueUrl.ShouldNotBeNullOrEmpty();
+
+        // clean up
+        await DeleteQueue(queueName);
+    }
+
+    [Fact]
+    public async Task CanCreateQueueWithManagedServerSideEncryption()
+    {
+        var queueName = nameof(CanCreateQueue) + Guid.NewGuid();
+        _clientAndServerFixture.Start(
+            _output,
+            queueName,
+            new CreateQueueRequest(queueName).WithDeadLetterQueue().WithManagedServerSideEncryption()
+        );
+
+        var queueUrlResult = await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(queueName);
+
+        var queueAttributes = await _clientAndServerFixture.SqsClient.GetQueueAttributesAsync(
+            queueUrlResult.QueueUrl,
+            new List<string> { QueueAttributeName.SqsManagedSseEnabled }
+        );
+
+        queueAttributes.Attributes.ContainsKey(QueueAttributeName.SqsManagedSseEnabled).ShouldBeTrue();
+        queueAttributes.Attributes[QueueAttributeName.SqsManagedSseEnabled].ShouldBe("true");
+
+        // clean up
+        await DeleteQueue(queueName);
+    }
+
+    [Fact]
+    public async Task CanCreateFifoQueue()
+    {
+        var queueName = $"{nameof(CanCreateFifoQueue)}{DateTime.Now.Ticks}.fifo";
+        _clientAndServerFixture.Start(
+            _output,
+            queueName,
+            createQueue: new CreateQueueRequest(queueName).SetDefaultValues().WithFIFO().WithDeadLetterQueue()
+        );
+
+        var queueUrlResult = await _clientAndServerFixture.SqsClient!.GetQueueUrlAsync(queueName);
+
+        queueUrlResult?.QueueUrl.ShouldNotBeNullOrEmpty();
+
+        // clean up
+        await DeleteQueue(queueName);
+    }
+
+    private async Task DeleteQueue(string queueName)
+    {
+        var sqsClient = _clientAndServerFixture.SqsClient!;
 
         var queueUrlResult = await sqsClient.GetQueueUrlAsync(queueName);
 
-        Assert.False(string.IsNullOrEmpty(queueUrlResult?.QueueUrl));
-
-        // clean up
         await sqsClient.DeleteQueueAsync(queueUrlResult.QueueUrl);
-        await sqsClient.DeleteQueueAsync($"{queueUrlResult.QueueUrl}-DLQ");
+
+        var dlqName = queueName.EndsWith(".fifo") ? $"{queueName.Replace(".fifo", "-DLQ.fifo")}" : $"{queueName}-DLQ";
+
+        try
+        {
+            var dlqUrlResult = await sqsClient.GetQueueUrlAsync(dlqName);
+            await sqsClient.DeleteQueueAsync(dlqUrlResult.QueueUrl);
+        }
+        catch (QueueDoesNotExistException) { }
     }
 
     public void Dispose()

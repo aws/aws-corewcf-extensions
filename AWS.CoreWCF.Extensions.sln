@@ -26,6 +26,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.ServerExtension
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{051AF7E5-D73B-466A-9FFE-9CA16DCBBEC3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.WCF.Extensions.Tests", "test\AWS.WCF.Extensions.Tests\AWS.WCF.Extensions.Tests.csproj", "{660C7969-3A44-4B56-BE44-FF7DBFC8293A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{6C31941A-4A56-4576-AB11-A8668F895B2A} = {062B3019-D5DA-44F6-A231-25B24B274E26}
 		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03} = {8D2100CE-759F-453D-BF00-3F13D1617815}
 		{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22} = {D0C9E9E8-51D5-482A-96F6-D15713E84341}
+		{660C7969-3A44-4B56-BE44-FF7DBFC8293A} = {062B3019-D5DA-44F6-A231-25B24B274E26}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C0EACB98-70D8-4923-A372-17934B5C9E5B}

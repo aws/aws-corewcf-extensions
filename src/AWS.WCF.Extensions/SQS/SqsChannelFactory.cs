@@ -35,14 +35,10 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
 
     public override T GetProperty<T>()
     {
-        T messageEncoderProperty = MessageEncoderFactory.Encoder.GetProperty<T>();
-        if (messageEncoderProperty != null)
-            return messageEncoderProperty;
-
         if (typeof(T) == typeof(MessageVersion))
             return (T)(object)MessageEncoderFactory.Encoder.MessageVersion;
 
-        return base.GetProperty<T>();
+        return MessageEncoderFactory.Encoder.GetProperty<T>() ?? base.GetProperty<T>();
     }
 
     /// <summary>

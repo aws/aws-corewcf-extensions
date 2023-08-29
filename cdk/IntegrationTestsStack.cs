@@ -24,7 +24,16 @@ public class IntegrationTestsStack : Stack
             new QueueProps { QueueName = ClientAndServerFixture.QueueWithDefaultSettings }
         );
 
-        new Queue(this, "fifoQueue", new QueueProps { QueueName = ClientAndServerFixture.FifoQueueName, Fifo = true });
+        new Queue(
+            this,
+            "fifoQueue",
+            new QueueProps
+            {
+                QueueName = ClientAndServerFixture.FifoQueueName,
+                Fifo = true,
+                ContentBasedDeduplication = true
+            }
+        );
 
         var snsSuccessQueue = new Queue(
             this,

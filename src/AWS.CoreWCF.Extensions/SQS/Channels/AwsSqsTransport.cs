@@ -21,7 +21,7 @@ internal class AwsSqsTransport : IQueueTransport
     private readonly string _queueName;
     private readonly Encoding _encoding;
     private readonly IDispatchCallbacksCollection _dispatchCallbacksCollection;
-    private readonly SQSMessageProvider _sqsMessageProvider;
+    private readonly ISQSMessageProvider _sqsMessageProvider;
 
     public int ConcurrencyLevel { get; }
 
@@ -42,7 +42,7 @@ internal class AwsSqsTransport : IQueueTransport
         ConcurrencyLevel = concurrencyLevel;
         _dispatchCallbacksCollection = dispatchCallbacksCollection;
         _logger = logger;
-        _sqsMessageProvider = _services.GetRequiredService<SQSMessageProvider>();
+        _sqsMessageProvider = _services.GetRequiredService<ISQSMessageProvider>();
     }
 
     public async ValueTask<QueueMessageContext?> ReceiveQueueMessageContextAsync(CancellationToken cancellationToken)

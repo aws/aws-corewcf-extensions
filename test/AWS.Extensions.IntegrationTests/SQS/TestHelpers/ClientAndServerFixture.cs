@@ -53,7 +53,8 @@ public class ClientAndServerFixture : IDisposable
 
     public void Start(
         ITestOutputHelper testOutputHelper,
-        string queueName = QueueWithDefaultSettings,
+        string queueName,
+        CreateQueueRequest? createQueue = null,
         IDispatchCallbacksCollection? dispatchCallbacks = null
     )
     {
@@ -84,12 +85,10 @@ public class ClientAndServerFixture : IDisposable
                         .AddAWSService<IAmazonSimpleNotificationService>()
                         .AddServiceModelServices()
                         .AddQueueTransport()
-                        .AddSQSClient(QueueName)
-                        .AddSQSClient(FifoQueueName),
+                        .AddSQSClient(queueName),
                 configure: app =>
                 {
-                    var queueUrl = app.EnsureSqsQueue(QueueName);
-                    var fifoQueueUrl = app.EnsureSqsQueue(FifoQueueName);
+                    var queueUrl = app.EnsureSqsQueue(queueName, createQueue);
 
                     app.UseServiceModel(services =>
                     {
@@ -97,18 +96,10 @@ public class ClientAndServerFixture : IDisposable
                         services.AddServiceEndpoint<LoggingService, ILoggingService>(
                             new AwsSqsBinding
                             {
-                                QueueName = QueueName,
+                                QueueName = queueName,
                                 DispatchCallbacksCollection = dispatchCallbacks
                             },
                             queueUrl
-                        );
-                        services.AddServiceEndpoint<LoggingService, ILoggingService>(
-                            new AwsSqsBinding
-                            {
-                                QueueName = FifoQueueName,
-                                DispatchCallbacksCollection = dispatchCallbacks
-                            },
-                            fifoQueueUrl
                         );
                     });
                 },

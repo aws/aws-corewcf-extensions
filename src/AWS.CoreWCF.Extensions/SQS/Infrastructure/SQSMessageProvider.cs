@@ -9,7 +9,13 @@ namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 /// <remarks>
 /// Requires a custom DI Factory.  See <see cref="SQSServiceCollectionExtensions.AddAmazonSQSClient"/>
 /// </remarks>
-internal class SQSMessageProvider
+public interface ISQSMessageProvider
+{
+    Task<Amazon.SQS.Model.Message?> ReceiveMessageAsync(string queueName);
+    Task DeleteSqsMessageAsync(string queueName, string receiptHandle);
+}
+
+internal class SQSMessageProvider : ISQSMessageProvider
 {
     private readonly ILogger<SQSMessageProvider> _logger;
 

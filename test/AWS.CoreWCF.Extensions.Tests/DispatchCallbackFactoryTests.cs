@@ -95,5 +95,19 @@ namespace AWS.CoreWCF.Extensions.Tests
             // make sure we didn't see any exceptions bubble up from Invoke()
             Assert.Null(capturedException);
         }
+
+        [Fact]
+        public async Task AllowNulls()
+        {
+            // ARRANGE
+            var dispatch = new DispatchCallbacksCollection();
+
+            // ACT
+            await dispatch.NotificationDelegateForFailedDispatch(null, null);
+            await dispatch.NotificationDelegateForSuccessfulDispatch(null, null);
+
+            // ASSERT
+            // expect no exceptions have been thrown
+        }
     }
 }

@@ -36,7 +36,6 @@ public class AwsSqsBinding : Binding
     }
 
     /// <inheritdoc cref="AwsSqsTransportBindingElement.MaxReceivedMessageSize"/>
-    [ExcludeFromCodeCoverage]
     public long MaxMessageSize
     {
         get => _transport.MaxReceivedMessageSize;
@@ -51,6 +50,5 @@ public class AwsSqsBinding : Binding
     }
 
     /// <inheritdoc cref="AwsSqsTransportBindingElement.Scheme"/>
-    [ExcludeFromCodeCoverage]
     public override string Scheme => _transport.Scheme;
 }
