@@ -1,13 +1,18 @@
 ﻿using Amazon.SQS;
-using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
 public static class SQSServiceCollectionExtensions
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="queueName"></param>
+    /// <param name="sqsClientBuilder"></param>
+    /// <returns></returns>
     public static IServiceCollection AddSQSClient(
         this IServiceCollection services,
         string queueName,
@@ -18,6 +23,13 @@ public static class SQSServiceCollectionExtensions
         return AddSQSClient(services, queueNames, sqsClientBuilder);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="queueNames"></param>
+    /// <param name="sqsClientBuilder"></param>
+    /// <returns></returns>
     public static IServiceCollection AddSQSClient(
         this IServiceCollection services,
         IEnumerable<string> queueNames,
@@ -54,29 +66,5 @@ public static class SQSServiceCollectionExtensions
 
             return namedSqsClients;
         });
-    }
-
-    public static string EnsureSqsQueue(
-        this IApplicationBuilder builder,
-        string queueName,
-        CreateQueueRequest? createQueueRequest = null
-    )
-    {
-        // TODO Harden
-        var sqsClient = builder.ApplicationServices
-            .GetServices<NamedSQSClientCollection>()
-            .SelectMany(x => x)
-            .FirstOrDefault(x => string.Equals(x.QueueName, queueName, StringComparison.InvariantCultureIgnoreCase))
-            ?.SQSClient;
-
-        createQueueRequest ??= new CreateQueueRequest(queueName);
-
-        // TODO Harden
-        sqsClient.EnsureSQSQueue(createQueueRequest);
-
-        // TODO Harden
-        var queueUrl = sqsClient.GetQueueUrlAsync(queueName).Result;
-
-        return queueUrl.QueueUrl;
     }
 }

@@ -12,4 +12,7 @@ internal class NamedSQSClientCollection : List<NamedSQSClient>
 {
     public NamedSQSClientCollection(IEnumerable<NamedSQSClient> items)
         : base(items) { }
+
+    public NamedSQSClientCollection(params NamedSQSClient[] items)
+        : this(items.AsEnumerable()) { }
 }

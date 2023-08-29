@@ -27,27 +27,43 @@ internal class SQSMessageProvider
 
         foreach (var namedSQSClient in namedSQSClients)
         {
-            if (null == namedSQSClient?.SQSClient || null == namedSQSClient?.QueueName)
-                throw new ArgumentException($"Invalid [{nameof(NamedSQSClient)}]");
+            if (null == namedSQSClient?.SQSClient || string.IsNullOrEmpty(namedSQSClient.QueueName))
+                throw new ArgumentException($"Invalid [{nameof(NamedSQSClient)}]", nameof(namedSQSClientCollections));
 
-            // TODO: Harden
-            var queueUrl = namedSQSClient.SQSClient.GetQueueUrlAsync(namedSQSClient.QueueName).Result.QueueUrl;
+            string queueUrl;
+
+            try
+            {
+                queueUrl = namedSQSClient.SQSClient.GetQueueUrlAsync(namedSQSClient.QueueName).Result.QueueUrl;
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException(
+                    $"Exception loading Queue details for [{namedSQSClient.QueueName}].  "
+                        + $"Make sure it has been created.",
+                    nameof(namedSQSClientCollections),
+                    e
+                );
+            }
 
             var entry = new SQSMessageProviderQueueCacheEntry
             {
-                QueueName = namedSQSClient.QueueName,
+                QueueName = namedSQSClient.QueueName!,
                 QueueUrl = queueUrl,
                 SQSClient = namedSQSClient.SQSClient
             };
 
-            _cache.AddOrUpdate(namedSQSClient.QueueName, _ => entry, (_, _) => entry);
+            _cache.AddOrUpdate(namedSQSClient.QueueName!, _ => entry, (_, _) => entry);
         }
     }
 
     public async Task<Amazon.SQS.Model.Message?> ReceiveMessageAsync(string queueName)
     {
         if (!_cache.TryGetValue(queueName, out var cacheEntry))
-            throw new Exception("Todo");
+            throw new ArgumentException(
+                $"QueueName [{queueName}] was not found.  Was it registered in the Constructor?",
+                nameof(queueName)
+            );
 
         var cachedMessages = cacheEntry.QueueMessages;
         var sqsClient = cacheEntry.SQSClient;
@@ -86,7 +102,10 @@ internal class SQSMessageProvider
     public async Task DeleteSqsMessageAsync(string queueName, string receiptHandle)
     {
         if (!_cache.TryGetValue(queueName, out var cacheEntry))
-            throw new Exception("Todo");
+            throw new ArgumentException(
+                $"QueueName [{queueName}] was not found.  Was it registered in the Constructor?",
+                nameof(queueName)
+            );
 
         await cacheEntry.SQSClient.DeleteMessageAsync(cacheEntry.QueueUrl, receiptHandle, _logger);
     }

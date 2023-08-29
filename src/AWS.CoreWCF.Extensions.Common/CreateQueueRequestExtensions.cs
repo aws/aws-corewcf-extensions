@@ -27,6 +27,17 @@ public static class CreateQueueRequestExtensions
         return request;
     }
 
+    public static CreateQueueRequest SetAttribute(
+        this CreateQueueRequest request,
+        QueueAttributeName attribute,
+        string value
+    )
+    {
+        request.Attributes[attribute] = value;
+
+        return request;
+    }
+
     public static CreateQueueRequest WithDeadLetterQueue(
         this CreateQueueRequest request,
         int maxReceiveCount = 1,

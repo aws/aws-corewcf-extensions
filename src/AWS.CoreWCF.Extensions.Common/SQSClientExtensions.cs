@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.SQS;
 using Amazon.SQS.Model;
@@ -82,59 +81,66 @@ public static class SQSClientExtensions
         return attributesResponse.QueueARN;
     }
 
-    public static async Task<IAmazonSQS> EnsureSQSQueue(
+    public static async Task<string> EnsureSQSQueue(this IAmazonSQS sqsClient, CreateQueueRequest createQueueRequest) =>
+        await sqsClient.EnsureSQSQueue(createQueueRequest.QueueName, () => createQueueRequest);
+
+    public static async Task<string> EnsureSQSQueue(
         this IAmazonSQS sqsClient,
-        CreateQueueRequest createQueueRequest
+        string queueName,
+        Func<CreateQueueRequest> createQueueRequestBuilder
     )
     {
-        var queueName = createQueueRequest.QueueName;
         try
         {
             var response = await sqsClient.GetQueueUrlAsync(queueName);
             response.Validate();
+
+            return response.QueueUrl;
         }
         catch (QueueDoesNotExistException)
         {
             try
             {
-                var createQueueRequestWithDlq = sqsClient.EnsureDeadLetterQueue(createQueueRequest);
-                var response = sqsClient.CreateQueueAsync(createQueueRequestWithDlq).Result;
+                var createQueueRequest = createQueueRequestBuilder();
+
+                var createQueueRequestWithDlq = await sqsClient.EnsureDeadLetterQueue(createQueueRequest);
+                var response = await sqsClient.CreateQueueAsync(createQueueRequestWithDlq);
                 response.Validate();
 
-                sqsClient.WithBasicPolicy(queueName);
+                await sqsClient.WithBasicPolicy(queueName);
+
+                return response.QueueUrl;
             }
             catch (Exception e)
             {
                 throw new Exception($"Failed to automatically create Queue [{queueName}]", e);
             }
         }
-
-        return sqsClient;
     }
 
-    public static IAmazonSQS WithBasicPolicy(this IAmazonSQS sqsClient, string queueName)
+    public static async Task<IAmazonSQS> WithBasicPolicy(this IAmazonSQS sqsClient, string queueName)
     {
-        var queueUrl = sqsClient.GetQueueUrlAsync(queueName).Result.QueueUrl;
-        var queueArn = sqsClient.GetQueueArnAsync(queueUrl).Result;
+        var queueUrl = (await sqsClient.GetQueueUrlAsync(queueName)).QueueUrl;
+        var queueArn = await sqsClient.GetQueueArnAsync(queueUrl);
         var basicPolicy = BasicPolicyTemplates.GetBasicSQSPolicy(queueArn);
 
-        return sqsClient.WithPolicy(queueUrl, basicPolicy);
+        return await sqsClient.WithPolicy(queueUrl, basicPolicy);
     }
 
-    public static IAmazonSQS WithPolicy(this IAmazonSQS sqsClient, string queueUrl, string policy)
+    public static async Task<IAmazonSQS> WithPolicy(this IAmazonSQS sqsClient, string queueUrl, string policy)
     {
         var request = new SetQueueAttributesRequest
         {
             QueueUrl = queueUrl,
             Attributes = new Dictionary<string, string> { { QueueAttributeName.Policy, policy } }
         };
-        var response = sqsClient.SetQueueAttributesAsync(request).Result;
+        var response = await sqsClient.SetQueueAttributesAsync(request);
         response.Validate();
 
         return sqsClient;
     }
 
-    private static CreateQueueRequest EnsureDeadLetterQueue(
+    private static async Task<CreateQueueRequest> EnsureDeadLetterQueue(
         this IAmazonSQS sqsClient,
         CreateQueueRequest createQueueRequest
     )
@@ -163,11 +169,11 @@ public static class SQSClientExtensions
         var createDlqRequest = new CreateQueueRequest { QueueName = dlqName, Attributes = dlqAttributes };
 
         // Create DLQ
-        var createDlqResponse = sqsClient.CreateQueueAsync(createDlqRequest).Result;
+        var createDlqResponse = await sqsClient.CreateQueueAsync(createDlqRequest);
         createDlqResponse.Validate();
 
         // Get DLQ ARN
-        var dlqArn = sqsClient.GetQueueArnAsync(createDlqResponse.QueueUrl).Result;
+        var dlqArn = await sqsClient.GetQueueArnAsync(createDlqResponse.QueueUrl);
 
         // Add DLQ ARN to existing redrive policy and return
         redrivePolicy["deadLetterTargetArn"] = dlqArn;

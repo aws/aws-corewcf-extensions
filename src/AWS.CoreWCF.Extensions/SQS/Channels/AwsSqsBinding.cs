@@ -4,6 +4,9 @@ using CoreWCF.Channels;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
+/// <summary>
+/// TODO
+/// </summary>
 public class AwsSqsBinding : Binding
 {
     private readonly TextMessageEncodingBindingElement _encoding;

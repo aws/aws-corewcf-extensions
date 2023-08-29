@@ -88,11 +88,6 @@ public class ClientAndServerFixture : IDisposable
                         .AddSQSClient(FifoQueueName),
                 configure: app =>
                 {
-                    // OPTION B:
-                    // 1.find the NamedSqsClient associated with QueueName
-                    // 2. use the SQSClient to make sdk calls
-                    // tweak: remove NamedSQSClient.QueueUrl to make it clear that queueUrl should
-                    // not be resolved eagerly.
                     var queueUrl = app.EnsureSqsQueue(QueueName);
                     var fifoQueueUrl = app.EnsureSqsQueue(FifoQueueName);
 
