@@ -5,7 +5,9 @@ namespace AWS.CoreWCF.Extensions.Common;
 
 public static class AmazonServiceExtensions
 {
-    private static readonly string UserAgentSuffix = $" CoreWCF-{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}";
+    // Format is defined in SDK User Agent Header  SEP
+    private static readonly string UserAgentSuffix =
+        $" ft/corewcf-sqs_{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}";
     private const string UserAgentHeader = "User-Agent";
 
     /// <summary>
