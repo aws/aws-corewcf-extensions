@@ -1,0 +1,76 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Get Version Info
+      uses: dotnet/nbgv@master
+      with:
+        setAllVars: true
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Configure credentials to default profile
+      env:
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_KEY }}
+      run: |
+        mkdir "~\.aws"
+        "[default]" | Out-File -FilePath "~\.aws\credentials"
+        "aws_access_key_id = $env:aws_access_key_id" | Out-File -FilePath "~\.aws\credentials" -Append
+        "aws_secret_access_key = $env:aws_secret_access_key" | Out-File -FilePath "~\.aws\credentials" -Append
+    - name: Test
+      # runs all automated tests
+      run: dotnet test --configuration Release --no-restore --verbosity normal
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+    - name: Lint
+      run: dotnet csharpier . --check
+
+  scan-for-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: 9a92a70
+          head: HEAD
+          extra_args: --debug --only-verified
+

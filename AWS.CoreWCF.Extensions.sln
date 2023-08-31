@@ -25,8 +25,19 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.CoreWCF.ServerExtensions.Cdk", "cdk\AWS.CoreWCF.ServerExtensions.Cdk.csproj", "{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{051AF7E5-D73B-466A-9FFE-9CA16DCBBEC3}"
+	ProjectSection(SolutionItems) = preProject
+		.gitlab-ci.yml = .gitlab-ci.yml
+		version.json = version.json
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.WCF.Extensions.Tests", "test\AWS.WCF.Extensions.Tests\AWS.WCF.Extensions.Tests.csproj", "{660C7969-3A44-4B56-BE44-FF7DBFC8293A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{15CDEEE0-D30A-4649-B9B1-C1070032014F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{BB19A1B8-6057-4D27-89A6-8998DD19AA1C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-and-deploy.yml = .github\workflows\build-and-deploy.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +85,8 @@ Global
 		{1ACA3DDE-04B4-4AAA-9690-DE3935503B03} = {8D2100CE-759F-453D-BF00-3F13D1617815}
 		{C9A4AA3C-821A-492B-82B8-28A4FE1F9C22} = {D0C9E9E8-51D5-482A-96F6-D15713E84341}
 		{660C7969-3A44-4B56-BE44-FF7DBFC8293A} = {062B3019-D5DA-44F6-A231-25B24B274E26}
+		{15CDEEE0-D30A-4649-B9B1-C1070032014F} = {051AF7E5-D73B-466A-9FFE-9CA16DCBBEC3}
+		{BB19A1B8-6057-4D27-89A6-8998DD19AA1C} = {15CDEEE0-D30A-4649-B9B1-C1070032014F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C0EACB98-70D8-4923-A372-17934B5C9E5B}

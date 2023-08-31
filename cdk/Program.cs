@@ -8,6 +8,8 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
     {
         public static void Main(string[] args)
         {
+            var sampleAWSCredToTestTruffleHog = "AKIAYVP4CIPPERUVIFXG";
+
             var stackProps = new StackProps
             {
                 // creds are defined in .gitlab-ci.yml
