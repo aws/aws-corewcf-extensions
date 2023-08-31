@@ -1,0 +1,63 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+env:
+  AWS_REGION : "us-west-2"
+# permission can be added at job level or workflow level
+permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Get Version Info
+      uses: dotnet/nbgv@master
+      with:
+        setAllVars: true
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_INTEGRATION_TEST_ROLE }}
+        role-session-name: github-cicd
+        aws-region: ${{ env.AWS_REGION }}   
+    - name: Test
+      # runs all automated tests
+      run: dotnet test --configuration Release --no-restore --verbosity normal
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+    - name: Lint
+      run: dotnet csharpier . --check

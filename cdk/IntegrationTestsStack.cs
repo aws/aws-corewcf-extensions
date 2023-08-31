@@ -1,5 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Amazon.CDK;
+using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
@@ -18,6 +20,8 @@ public class IntegrationTestsStack : Stack
     internal IntegrationTestsStack(Construct scope, string id, IStackProps props = null)
         : base(scope, id, props)
     {
+        CreateGitHubOidcTestRunner();
+
         new Queue(
             this,
             "defaultSettingsQueue",
@@ -64,6 +68,60 @@ public class IntegrationTestsStack : Stack
             this,
             "snsFailureTopicArn",
             new CfnOutputProps { ExportName = "SNS-Failure-Topic-ARN", Value = snsFailureTopic.TopicArn }
+        );
+    }
+
+    /// <remarks>
+    /// GitHub Documentation: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+    /// Example Blog: https://towardsthecloud.com/aws-cdk-openid-connect-github
+    /// </remarks>
+    private void CreateGitHubOidcTestRunner()
+    {
+        var githubProvider = new OpenIdConnectProvider(
+            this,
+            "githubProvider",
+            new OpenIdConnectProviderProps
+            {
+                Url = "https://token.actions.githubusercontent.com",
+                ClientIds = new[] { "sts.amazonaws.com" }
+            }
+        );
+
+        var assumeRoleIdentity = new WebIdentityPrincipal(
+            githubProvider.OpenIdConnectProviderArn,
+            conditions: new Dictionary<string, object>
+            {
+                {
+                    "StringLike",
+                    new Dictionary<string, string>
+                    {
+                        { "token.actions.githubusercontent.com:sub", "repo:aws/aws-corewcf-extensions:*" },
+                        { "token.actions.githubusercontent.com:aud", "sts.amazonaws.com" }
+                    }
+                }
+            }
+        );
+
+        var githubTestRunnerRole = new Role(
+            this,
+            "githubIntegrationTestRunnerRole",
+            new RoleProps
+            {
+                AssumedBy = assumeRoleIdentity,
+                ManagedPolicies = new[] { ManagedPolicy.FromAwsManagedPolicyName("AdministratorAccess") },
+                RoleName = "corewcfGithubIntegrationTestRole",
+                MaxSessionDuration = Duration.Hours(1)
+            }
+        );
+
+        new CfnOutput(
+            this,
+            "githubIntegrationTestRunnerRoleArn",
+            new CfnOutputProps
+            {
+                Value = githubTestRunnerRole.RoleArn,
+                ExportName = "githubIntegrationTestRunnerRoleArn"
+            }
         );
     }
 }
