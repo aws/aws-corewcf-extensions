@@ -56,6 +56,7 @@ public static class DispatchCallbackFactory
     }
 
     private static bool HasAddedCustomUserAgentSuffix;
+
     private static async Task SendNotificationToSns(IServiceProvider services, PublishRequest publishRequest)
     {
         try
