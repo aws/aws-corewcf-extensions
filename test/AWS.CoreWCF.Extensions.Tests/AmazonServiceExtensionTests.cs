@@ -74,7 +74,7 @@ namespace AWS.CoreWCF.Extensions.Tests
             // ASSERT
             _webServiceRequestEventArgs.Headers["User-Agent"]
                 .Split(" ")
-                .Count(s => s.StartsWith("CoreWCF"))
+                .Count(s => s.StartsWith("ft/corewcf"))
                 .ShouldBe(1);
         }
     }
