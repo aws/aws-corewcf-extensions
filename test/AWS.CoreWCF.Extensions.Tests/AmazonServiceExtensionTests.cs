@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal;
 using Amazon.Runtime.Internal.Auth;
@@ -27,7 +28,7 @@ namespace AWS.CoreWCF.Extensions.Tests
         public AmazonServiceExtensionTests()
         {
             // ARRANGE
-            _sqsClient = new AmazonSQSClient(new AnonymousAWSCredentials());
+            _sqsClient = new AmazonSQSClient(new AnonymousAWSCredentials(), RegionEndpoint.USWest2);
 
             _sqsClient.SetCustomUserAgentSuffix();
 

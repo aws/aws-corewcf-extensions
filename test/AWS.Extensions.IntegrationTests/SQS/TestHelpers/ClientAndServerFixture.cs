@@ -4,6 +4,7 @@ using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
@@ -16,6 +17,7 @@ using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Configuration;
 using CoreWCF.Queue.Common.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -42,14 +44,15 @@ public class ClientAndServerFixture : IDisposable
     public const string FifoQueueName = "CoreWCFExtensionsTest.fifo";
     public const string SnsNotificationSuccessQueue = "CoreWCF-SNSSuccessQueue";
 
+    public const string SuccessTopicName = "CoreWCF-Success";
+    public const string FailureTopicName = "CoreWCF-Failure";
+
     public IWebHost? Host { get; private set; }
     public ILoggingService? Channel { get; private set; }
     public IAmazonSQS? SqsClient { get; private set; }
     public string? QueueName { get; private set; }
 
     public Settings? Settings { get; private set; }
-
-    public IntegrationTestAWSOptionsBuilder? AWSOptionsBuilder { get; private set; }
 
     public void Start(
         ITestOutputHelper testOutputHelper,
@@ -60,27 +63,48 @@ public class ClientAndServerFixture : IDisposable
     {
         QueueName = queueName;
 
-        var settingsJson = File.ReadAllText(Path.Combine("SQS", "appsettings.test.json"));
+        var config = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine("SQS", "appsettings.test.json"))
+            .AddEnvironmentVariables()
+            .Build();
 
-        Settings = JsonSerializer.Deserialize<Settings>(settingsJson)!;
+        Settings = config.Get<Settings>();
 
-        AWSOptionsBuilder = new IntegrationTestAWSOptionsBuilder(Settings);
+        var defaultAwsOptions = !string.IsNullOrEmpty(Settings?.AWS?.AWS_ACCESS_KEY_ID)
+            ? new AWSOptions
+            {
+                Credentials = new BasicAWSCredentials(
+                    Settings.AWS.AWS_ACCESS_KEY_ID,
+                    Settings.AWS.AWS_SECRET_ACCESS_KEY
+                ),
+                Region = RegionEndpoint.GetBySystemName(Settings.AWS.AWS_REGION)
+            }
+            : config.GetAWSOptions();
 
-        SqsClient = new AmazonSQSClient(
-            new BasicAWSCredentials(Settings.AWS.AWS_ACCESS_KEY_ID, Settings.AWS.AWS_SECRET_ACCESS_KEY),
-            RegionEndpoint.GetBySystemName(Settings.AWS.AWS_REGION)
-        );
+        // bootstrap helper aws services
+        var serviceProvider = new ServiceCollection()
+            .AddAWSService<IAmazonSQS>()
+            .AddAWSService<IAmazonSimpleNotificationService>()
+            .AddDefaultAWSOptions(defaultAwsOptions)
+            .BuildServiceProvider();
+
+        SqsClient = serviceProvider.GetService<IAmazonSQS>();
+
+        var snsClient = serviceProvider.GetService<IAmazonSimpleNotificationService>()!;
+
+        var successTopicArn = snsClient.FindTopicAsync(SuccessTopicName).Result.TopicArn;
+        var failureTopicArn = snsClient.FindTopicAsync(SuccessTopicName).Result.TopicArn;
 
         dispatchCallbacks ??= DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
-            Settings.AWS.SUCCESS_TOPIC_ARN ?? "",
-            Settings.AWS.FAILURE_TOPIC_ARN ?? ""
+            successTopicArn,
+            failureTopicArn
         );
 
         Host = ServiceHelper
             .CreateServiceHost(
                 configureServices: services =>
                     services
-                        .AddDefaultAWSOptions(AWSOptionsBuilder.Build())
+                        .AddDefaultAWSOptions(defaultAwsOptions)
                         .AddSingleton<ILogger>(NullLogger.Instance)
                         .AddAWSService<IAmazonSimpleNotificationService>()
                         .AddServiceModelServices()

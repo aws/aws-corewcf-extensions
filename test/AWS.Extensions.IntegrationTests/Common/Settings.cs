@@ -13,15 +13,5 @@ public class Settings
         public string? AWS_ACCESS_KEY_ID { get; set; }
         public string? AWS_SECRET_ACCESS_KEY { get; set; }
         public string? AWS_REGION { get; set; } = "us-west-2";
-
-        /// <remarks>
-        /// This value should come from using CDK to deploy the IntegrationTestsStack
-        /// </remarks>
-        public string? FAILURE_TOPIC_ARN { get; set; }
-
-        /// <remarks>
-        /// This value should come from using CDK to deploy the IntegrationTestsStack
-        /// </remarks>
-        public string? SUCCESS_TOPIC_ARN { get; set; }
     }
 }

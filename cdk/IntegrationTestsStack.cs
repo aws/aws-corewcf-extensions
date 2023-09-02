@@ -44,14 +44,14 @@ public class IntegrationTestsStack : Stack
         var snsSuccessTopic = new Amazon.CDK.AWS.SNS.Topic(
             this,
             "snsSuccessTopic",
-            new TopicProps { TopicName = "CoreWCF-Success" }
+            new TopicProps { TopicName = ClientAndServerFixture.SuccessTopicName }
         );
         snsSuccessTopic.AddSubscription(new SqsSubscription(snsSuccessQueue));
 
         var snsFailureTopic = new Amazon.CDK.AWS.SNS.Topic(
             this,
             "snsFailureTopic",
-            new TopicProps { TopicName = "CoreWCF-Failure" }
+            new TopicProps { TopicName = ClientAndServerFixture.FailureTopicName }
         );
 
         new CfnOutput(
