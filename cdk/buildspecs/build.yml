@@ -1,0 +1,11 @@
+﻿version: 0.2
+
+phases:
+  build:
+    commands:
+      - ls
+      - cd AWSCoreWCFServerExtensions
+      - dotnet build -c Release
+artifacts:
+  files:
+    - '**/*'

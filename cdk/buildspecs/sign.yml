@@ -1,0 +1,23 @@
+﻿version: 0.2
+env:
+  shell: bash
+  variables: 
+    WCF_EXTENSIONS_PATH: ./src/AWS.WCF.Extensions/bin/Release/netstandard2.0
+    COREWCF_EXTENSIONS_PATH: ./src/AWS.CoreWCF.Extensions/bin/Release/netstandard2.0
+phases:  
+  build:
+    commands:
+      - ls
+      - cd AWSCoreWCFServerExtensions
+      #assume signing role and save creds to env variables
+      - eval $(aws sts assume-role --role-arn $SIGNING_ROLE_ARN --role-session-name signing --external-id CoreWCFExtensionsSigner | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - dotnet build ./src/CodeSigningHelper
+      # sign AWS.CoreWCF.Extensions and AWS.WCF.Extensions
+      - ./src/CodeSigningHelper/bin/Debug/net6.0/CodeSigningHelper $UNSIGNED_BUCKET_NAME $SIGNED_BUCKET_NAME $WCF_EXTENSIONS_PATH $COREWCF_EXTENSIONS_PATH
+      #create nuget packages
+      - dotnet restore
+      - dotnet pack -c Release --no-build ./src/AWS.WCF.Extensions --output .
+      - dotnet pack -c Release --no-build ./src/AWS.CoreWCF.Extensions --output .
+artifacts:
+  files:
+    - '**/*.nupkg'

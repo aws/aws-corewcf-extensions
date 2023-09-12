@@ -113,6 +113,7 @@ deploy-cdk-job:  # deploys cdk AND save output for integration tests
     AWS_CREDS_TARGET_ROLE: $AWS_CREDS_TARGET_ROLE_PROD
     AWS_DEFAULT_REGION: $CDK_DEFAULT_REGION
     ACCOUNT_ID: $CDK_DEFAULT_ACCOUNT_PROD
+    # additional variables are defined in gitlab settings
   script:
-    - cdk deploy AWSCoreWCFServerExtensionsIntegrationTests  --require-approval never --outputs-file ./cdk-outputs.json
+    - cdk deploy --all  --require-approval never
 

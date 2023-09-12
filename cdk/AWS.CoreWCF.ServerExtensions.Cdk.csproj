@@ -8,6 +8,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="buildspecs\build.yml" />
+    <None Remove="buildspecs\nuget-deploy.yml" />
+    <None Remove="buildspecs\sign.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="buildspecs\nuget-deploy.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="buildspecs\sign.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="buildspecs\build.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- CDK Construct Library dependencies -->
     <PackageReference Include="Amazon.CDK.Lib" Version="2.84.0" />
     <PackageReference Include="Constructs" Version="[10.0.0,11.0.0)" />

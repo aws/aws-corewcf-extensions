@@ -1,0 +1,17 @@
+﻿version: 0.2
+env:
+  shell: bash
+phases:
+  pre_build:
+    commands:
+      # assume nuget-deploy role to read nuget publish secrets
+      - eval $(aws sts assume-role --role-arn $NUGET_PUBLISH_SECRET_ACCESS_ROLE_ARN --role-session-name signing --external-id CoreWCFExtensionsSigner | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - export COREWCF_SECRET=$(aws secretsmanager get-secret-value --secret-id $SECRET_ARN_CORE_WCF_NUGET_PUBLISH_KEY | jq -r '.SecretString' | jq -r ".Key")
+      - export WCF_SECRET=$(aws secretsmanager get-secret-value --secret-id $SECRET_ARN_WCF_NUGET_PUBLISH_KEY | jq -r '.SecretString' | jq -r ".Key")
+  build:
+    commands:
+      - cd AWSCoreWCFServerExtensions
+      - echo "nuget push corewcf.package -ApiKey ${COREWCF_SECRET:0:3}"
+      - echo "nuget push wcf.package -ApiKey ${WCF_SECRET:0:3}"
+     # fail until build script is updated to actualy inovke nuget push command
+      - exit 255

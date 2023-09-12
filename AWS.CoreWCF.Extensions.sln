@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\secret-detection.yml = .github\workflows\secret-detection.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeSigningHelper", "src\CodeSigningHelper\CodeSigningHelper.csproj", "{7859F3D8-1573-463F-8A6E-3DB14896A1A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{660C7969-3A44-4B56-BE44-FF7DBFC8293A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7859F3D8-1573-463F-8A6E-3DB14896A1A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7859F3D8-1573-463F-8A6E-3DB14896A1A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7859F3D8-1573-463F-8A6E-3DB14896A1A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7859F3D8-1573-463F-8A6E-3DB14896A1A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +95,7 @@ Global
 		{660C7969-3A44-4B56-BE44-FF7DBFC8293A} = {062B3019-D5DA-44F6-A231-25B24B274E26}
 		{15CDEEE0-D30A-4649-B9B1-C1070032014F} = {051AF7E5-D73B-466A-9FFE-9CA16DCBBEC3}
 		{BB19A1B8-6057-4D27-89A6-8998DD19AA1C} = {15CDEEE0-D30A-4649-B9B1-C1070032014F}
+		{7859F3D8-1573-463F-8A6E-3DB14896A1A7} = {D0C9E9E8-51D5-482A-96F6-D15713E84341}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C0EACB98-70D8-4923-A372-17934B5C9E5B}
