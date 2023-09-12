@@ -1,0 +1,49 @@
+name: Canary
+
+on:
+ schedule:
+  - cron: '0 9,14 * * *'  # every day at 9am and 2pm
+env:
+  AWS_REGION : "us-west-2"
+# permission can be added at job level or workflow level
+permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+
+jobs:
+  canary-runs-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_INTEGRATION_TEST_ROLE }}
+        role-session-name: github-canary
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Test
+      # runs all automated tests
+      run: dotnet test --configuration Release --no-restore --verbosity normal
+    - name: Send metric success
+      if: success()
+      run: |
+        aws cloudwatch put-metric-data --namespace TuxNetOps --metric-name corewcf-sqs-canary --value 1
+    
+    - name: Send metric failure
+      if: failure()
+      run: |
+        aws cloudwatch put-metric-data --namespace TuxNetOps --metric-name corewcf-sqs-canary --value 0
+  
