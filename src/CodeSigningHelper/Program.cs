@@ -46,6 +46,9 @@ namespace CodeSigningHelper
                     $"Usage: {Assembly.GetExecutingAssembly().GetName().Name} "
                         + $"<unsignedBucketName> <signedBucketName> <workingDirectory1> ... <workingDirectoryN>"
                 );
+
+                // signal failure to signing pipeline
+                Environment.Exit(-25);
             }
         }
 
