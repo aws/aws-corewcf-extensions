@@ -87,7 +87,7 @@ namespace CodeSigningHelper
                 Log($"Uploaded {fileName}.  Waiting for SignerJobId Tag");
 
                 string? signerJob = null;
-                do
+                while (true)
                 {
                     var tags = await _s3Client.GetObjectTaggingAsync(
                         new GetObjectTaggingRequest { BucketName = _unsignedBucketName, Key = unsignedKey },
@@ -95,7 +95,12 @@ namespace CodeSigningHelper
                     );
 
                     signerJob = tags.Tagging.FirstOrDefault(t => t.Key == SignerJobIdTag)?.Value;
-                } while (string.IsNullOrEmpty(signerJob));
+
+                    if (!string.IsNullOrEmpty(signerJob))
+                        break;
+
+                    await Task.Delay(TimeSpan.FromSeconds(1.5), token);
+                }
 
                 Log($"Found Signer Job Id for {fileName}: [{signerJob}].  Monitoring Signed Bucket");
 
@@ -115,7 +120,7 @@ namespace CodeSigningHelper
                     }
                     catch (AmazonS3Exception e)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(1500), token);
+                        await Task.Delay(TimeSpan.FromSeconds(1.5), token);
                     }
                 }
 
