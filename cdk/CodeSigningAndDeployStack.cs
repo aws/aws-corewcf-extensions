@@ -45,7 +45,8 @@ public class CodeSigningAndDeployStack : Stack
             {
                 BucketName = $"code-signing-and-deploy-pipeline-source-{Account}",
                 Versioned = true,
-                BlockPublicAccess = BlockPublicAccess.BLOCK_ALL
+                BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
+                EventBridgeEnabled = true
             }
         );
 
