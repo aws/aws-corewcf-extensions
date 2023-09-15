@@ -153,30 +153,4 @@ public class ClientAndServerFixture : IDisposable
             ((System.ServiceModel.Channels.IChannel)Channel).Close();
         }
     }
-
-    public class IntegrationTestAWSOptionsBuilder
-    {
-        private readonly Settings _settings;
-
-        public IntegrationTestAWSOptionsBuilder(Settings settings)
-        {
-            _settings = settings;
-        }
-
-        public AWSOptions Build()
-        {
-            var options = new AWSOptions();
-            Populate(options);
-            return options;
-        }
-
-        public void Populate(AWSOptions awsOptions)
-        {
-            awsOptions.Credentials = new BasicAWSCredentials(
-                _settings.AWS.AWS_ACCESS_KEY_ID,
-                _settings.AWS.AWS_SECRET_ACCESS_KEY
-            );
-            awsOptions.Region = RegionEndpoint.GetBySystemName(_settings.AWS.AWS_REGION);
-        }
-    }
 }
