@@ -5,7 +5,7 @@ using System.ServiceModel.Channels;
 using System.Text;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using AWS.CoreWCF.Extensions.Common;
+using AWS.WCF.Extensions.Common;
 using AWS.WCF.Extensions.SQS.Runtime;
 using Message = System.ServiceModel.Channels.Message;
 
