@@ -49,7 +49,7 @@ internal class AwsSqsTransport : IQueueTransport
     {
         try
         {
-            var sqsMessage = await _sqsMessageProvider.ReceiveMessageAsync(_queueName);
+            var sqsMessage = await _sqsMessageProvider.ReceiveMessageAsync(_queueName).ConfigureAwait(false);
 
             if (sqsMessage is null)
             {
