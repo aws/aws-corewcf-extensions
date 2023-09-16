@@ -80,9 +80,9 @@ internal class SQSMessageProvider : ISQSMessageProvider
         {
             await mutex.WaitAsync().ConfigureAwait(false);
 
-            if (cachedMessages.IsEmpty)
+            try
             {
-                try
+                if (cachedMessages.IsEmpty)
                 {
                     var newMessages = await sqsClient.ReceiveMessagesAsync(queueUrl, _logger);
                     foreach (var newMessage in newMessages)
@@ -90,10 +90,10 @@ internal class SQSMessageProvider : ISQSMessageProvider
                         cachedMessages.Enqueue(newMessage);
                     }
                 }
-                finally
-                {
-                    mutex.Release();
-                }
+            }
+            finally
+            {
+                mutex.Release();
             }
         }
 
