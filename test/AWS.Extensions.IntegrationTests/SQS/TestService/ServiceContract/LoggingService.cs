@@ -39,6 +39,7 @@ public class LoggingService : ILoggingService
     public void LogMessage(string toLog)
     {
         LogResults.Add(toLog);
+        Thread.Sleep(TimeSpan.FromMilliseconds(10));
     }
 
     public void CauseFailure()
