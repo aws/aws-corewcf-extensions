@@ -60,6 +60,22 @@ public class SQSClientExtensionTests
     }
 
     [Fact]
+    public async Task ReceiveMessagesSwallowsExceptions()
+    {
+        // ARRANGE
+        var fakeSqsClient = Substitute.For<IAmazonSQS>();
+        fakeSqsClient
+            .ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception("Testing"));
+
+        // ACT
+        await fakeSqsClient.ReceiveMessagesAsync("queueUrl", Substitute.For<ILogger>());
+
+        // ASSERT
+        // expect no exception to be thrown
+    }
+
+    [Fact]
     [ExcludeFromCodeCoverage]
     public async Task EnsureSQSQueueWrapsExceptions()
     {

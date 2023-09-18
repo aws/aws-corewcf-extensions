@@ -2,7 +2,9 @@
 using System.ServiceModel;
 using Amazon;
 using Amazon.Extensions.NETCore.Setup;
+using Amazon.IdentityManagement;
 using Amazon.Runtime;
+using Amazon.SecurityToken;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
@@ -50,6 +52,8 @@ public class ClientAndServerFixture : IDisposable
     public IWebHost? Host { get; private set; }
     public ILoggingService? Channel { get; private set; }
     public IAmazonSQS? SqsClient { get; private set; }
+    public IAmazonSecurityTokenService? StsClient { get; set; }
+    public IAmazonIdentityManagementService? IamClient { get; set; }
     public string? QueueName { get; private set; }
 
     public Settings? Settings { get; private set; }
@@ -85,10 +89,14 @@ public class ClientAndServerFixture : IDisposable
         var serviceProvider = new ServiceCollection()
             .AddAWSService<IAmazonSQS>()
             .AddAWSService<IAmazonSimpleNotificationService>()
+            .AddAWSService<IAmazonSecurityTokenService>()
+            .AddAWSService<IAmazonIdentityManagementService>()
             .AddDefaultAWSOptions(defaultAwsOptions)
             .BuildServiceProvider();
 
         SqsClient = serviceProvider.GetService<IAmazonSQS>();
+        StsClient = serviceProvider.GetService<IAmazonSecurityTokenService>();
+        IamClient = serviceProvider.GetService<IAmazonIdentityManagementService>();
 
         var snsClient = serviceProvider.GetService<IAmazonSimpleNotificationService>()!;
 

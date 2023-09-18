@@ -5,6 +5,7 @@ using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
+using AWS.Extensions.IntegrationTests.SQS;
 using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using Constructs;
 
@@ -21,6 +22,8 @@ public class IntegrationTestsStack : Stack
         : base(scope, id, props)
     {
         CreateGitHubOidcTestRunner();
+
+        CreateSQSReadOnlyRole();
 
         new Queue(
             this,
@@ -122,6 +125,31 @@ public class IntegrationTestsStack : Stack
                 Value = githubTestRunnerRole.RoleArn,
                 ExportName = "githubIntegrationTestRunnerRoleArn"
             }
+        );
+    }
+
+    private void CreateSQSReadOnlyRole()
+    {
+        var role = new Role(
+            this,
+            NegativeIntegrationTests.SqsReadOnlyRoleName,
+            new RoleProps
+            {
+                AssumedBy = new AccountPrincipal(base.Account),
+                ManagedPolicies = new[] { ManagedPolicy.FromAwsManagedPolicyName("AmazonSQSReadOnlyAccess") },
+                RoleName = NegativeIntegrationTests.SqsReadOnlyRoleName,
+                MaxSessionDuration = Duration.Hours(1)
+            }
+        );
+
+        role.AssumeRolePolicy.AddStatements(
+            new PolicyStatement(
+                new PolicyStatementProps
+                {
+                    Principals = new IPrincipal[] { new AccountPrincipal(base.Account) },
+                    Actions = new[] { "sts:TagSession" }
+                }
+            )
         );
     }
 }

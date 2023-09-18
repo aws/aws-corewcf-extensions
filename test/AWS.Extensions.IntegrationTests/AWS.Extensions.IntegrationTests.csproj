@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
+    <PackageReference Include="AWSSDK.IdentityManagement" Version="3.7.200.41" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.201.37" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
