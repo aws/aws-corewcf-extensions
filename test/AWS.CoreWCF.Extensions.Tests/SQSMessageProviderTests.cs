@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
@@ -94,6 +95,9 @@ public class SQSMessageProviderTests
         fakeSqsClient
             .GetQueueUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new GetQueueUrlResponse()));
+        fakeSqsClient
+            .GetQueueAttributesAsync(Arg.Any<string>(), Arg.Any<List<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new GetQueueAttributesResponse()));
 
         var listWithDuplicate = new List<NamedSQSClientCollection>
         {
@@ -148,6 +152,81 @@ public class SQSMessageProviderTests
         // ASSERT
         expectedException.ShouldNotBeNull();
         expectedException.Message.ShouldContain(fakeQueue);
+    }
+
+    [Fact]
+    public async Task ReceiveMessageHonorsVisibilityTimeout()
+    {
+        // ARRANGE
+        const string fakeQueueName = nameof(ReceiveMessageHonorsVisibilityTimeout);
+        const string batch1Message = "Batch 1";
+        const string batch2Message = "Batch 2";
+
+        var fakeSqsClient = Substitute.For<IAmazonSQS>();
+        fakeSqsClient
+            .GetQueueUrlAsync(Arg.Is(fakeQueueName), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new GetQueueUrlResponse()));
+        fakeSqsClient
+            .GetQueueAttributesAsync(Arg.Any<string>(), Arg.Any<List<string>>(), Arg.Any<CancellationToken>())
+            .Returns(
+                Task.FromResult(
+                    new GetQueueAttributesResponse
+                    {
+                        Attributes = new Dictionary<string, string>
+                        {
+                            { QueueAttributeName.VisibilityTimeout, "1" } // 1 second is the lowest value to keep the Timeout "on"
+                        }
+                    }
+                )
+            );
+
+        fakeSqsClient
+            .ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>())
+            .Returns(
+                // first call to ReceiveMessageAsync returns 5 'Batch 1' messages
+                Task.FromResult(
+                    new ReceiveMessageResponse
+                    {
+                        HttpStatusCode = HttpStatusCode.OK,
+                        Messages = Enumerable.Range(0, 5).Select(_ => new Message { Body = batch1Message }).ToList()
+                    }
+                ),
+                // second call to ReceiveMessageAsync returns 5 'Batch 2' messages
+                Task.FromResult(
+                    new ReceiveMessageResponse
+                    {
+                        HttpStatusCode = HttpStatusCode.OK,
+                        Messages = Enumerable.Range(0, 5).Select(_ => new Message { Body = batch2Message }).ToList()
+                    }
+                )
+            );
+
+        var namedClients = new List<NamedSQSClientCollection>
+        {
+            new(new NamedSQSClient { QueueName = fakeQueueName, SQSClient = fakeSqsClient })
+        };
+
+        var sqsMessageProvider = new SQSMessageProvider(
+            namedClients,
+            new Logger<SQSMessageProvider>(Substitute.For<ILoggerFactory>())
+        );
+
+        // ACT
+
+        // get 1 message from provider - this should return a message from batch 1
+        var firstMessage = await sqsMessageProvider.ReceiveMessageAsync(fakeQueueName);
+
+        // wait slightly longer than the message visibility timeout so that the cache expires
+        await Task.Delay(TimeSpan.FromSeconds(1.2));
+
+        // this should require a new call to SqsClient.ReceiveMessage, which should
+        // return a message from batch 2
+        var secondMessage = await sqsMessageProvider.ReceiveMessageAsync(fakeQueueName);
+
+        // ASSERT
+        firstMessage!.Body.ShouldBe(batch1Message);
+
+        secondMessage!.Body.ShouldBe(batch2Message);
     }
 
     [Fact]

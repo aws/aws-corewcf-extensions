@@ -37,10 +37,16 @@ internal class SQSMessageProvider : ISQSMessageProvider
                 throw new ArgumentException($"Invalid [{nameof(NamedSQSClient)}]", nameof(namedSQSClientCollections));
 
             string queueUrl;
-
+            TimeSpan messageVisibilityTimeout;
             try
             {
                 queueUrl = namedSQSClient.SQSClient.GetQueueUrlAsync(namedSQSClient.QueueName).Result.QueueUrl;
+
+                messageVisibilityTimeout = TimeSpan.FromSeconds(
+                    namedSQSClient.SQSClient
+                        .GetQueueAttributesAsync(queueUrl, new List<string> { QueueAttributeName.VisibilityTimeout })
+                        .Result.VisibilityTimeout
+                );
             }
             catch (Exception e)
             {
@@ -56,7 +62,8 @@ internal class SQSMessageProvider : ISQSMessageProvider
             {
                 QueueName = namedSQSClient.QueueName!,
                 QueueUrl = queueUrl,
-                SQSClient = namedSQSClient.SQSClient
+                SQSClient = namedSQSClient.SQSClient,
+                MessageVisibilityTimeout = messageVisibilityTimeout
             };
 
             _cache.AddOrUpdate(namedSQSClient.QueueName!, _ => entry, (_, _) => entry);
@@ -76,14 +83,23 @@ internal class SQSMessageProvider : ISQSMessageProvider
         var queueUrl = cacheEntry.QueueUrl;
         var mutex = cacheEntry.Mutex;
 
-        if (cachedMessages.IsEmpty)
+        if (cachedMessages.IsEmpty || cacheEntry.IsExpired())
         {
             await mutex.WaitAsync().ConfigureAwait(false);
 
             try
             {
+                if (cacheEntry.IsExpired())
+                    // clear the cache as SQS may have started giving these messages
+                    // to other workers.  we'll need to reacquire a new batch of messages
+                    while (cachedMessages.TryDequeue(out _)) { }
+
                 if (cachedMessages.IsEmpty)
                 {
+                    // reset cache expiration.  this value is conservative, as we're
+                    // setting expiration _before_ the ReceiveMessage call is sent to SQS.
+                    cacheEntry.RefreshExpirationTime();
+
                     var newMessages = await sqsClient.ReceiveMessagesAsync(queueUrl, _logger);
                     foreach (var newMessage in newMessages)
                     {
@@ -123,5 +139,17 @@ internal class SQSMessageProvider : ISQSMessageProvider
         public string QueueName { get; set; }
         public IAmazonSQS SQSClient { get; set; }
         public string QueueUrl { get; set; }
+        public TimeSpan MessageVisibilityTimeout { get; set; }
+        public DateTimeOffset CacheEntryExpiration { get; set; }
+
+        public bool IsExpired()
+        {
+            return DateTimeOffset.Now > CacheEntryExpiration;
+        }
+
+        public void RefreshExpirationTime()
+        {
+            CacheEntryExpiration = DateTimeOffset.Now.Add(MessageVisibilityTimeout);
+        }
     }
 }
