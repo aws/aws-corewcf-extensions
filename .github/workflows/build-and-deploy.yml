@@ -24,6 +24,7 @@ jobs:
       with:
         dotnet-version: |
           6.0.x
+          7.0.x
     - name: Install dependencies
       run: |
         dotnet restore
@@ -39,10 +40,60 @@ jobs:
     - name: Test
       # runs all automated tests
       run: dotnet test --configuration Release --no-restore --verbosity normal
+  
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+        dotnet tool install --add-source ${{ secrets.AWS_BENCHMARK_TOOL_PRIVATE_FEED }} BenchmarkDotnetCliTool
+    - name: Prepare Benchmark AWS Config Json
+      shell: pwsh
+      run: |
+        Get-Content benchmark-aws-config.json
+        # update config file with values from secrets
+        $awsConfigJson = Get-Content benchmark-aws-config.json
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_EC2_INSTANCE_PROFILE_ARN", "${{ secrets.AWS_BENCHMARK_EC2_INSTANCE_PROFILE_ARN }}")
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_BUCKET_NAME", "${{ secrets.AWS_BENCHMARK_BUCKET_NAME }}")
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_TOOL_PRIVATE_FEED", "${{ secrets.AWS_BENCHMARK_TOOL_PRIVATE_FEED }}")
+        $awsConfigJson | Out-File benchmark-aws-config.json
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_BENCHMARK_TEST_ROLE }}
+        role-session-name: github-cicd
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Run Benchmarking
+      shell: pwsh
+      run: |
+        # current is the more recent git tag and baseline is the tag before that
+        # this assumes that as part of the release process, the new tag has already
+        # been created
+        $current=(git tag -l --sort=-v:refname)[0]
+        $baseline=(git tag -l --sort=-v:refname)[1]
+        #performance must degrade by atleast 50% to trigger alarm
+        $threshold=50.0
+        echo "current: $current"
+        echo "baseline: $baseline"
+        echo "threshold: $threshold"
+        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $current --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: 
+      - build-and-test
+      - benchmark
     steps:
     - uses: actions/checkout@v2
       # set fetch-depth to 0 to get full git history, needed for NerdBank GitVersion to caclulate version
@@ -74,6 +125,7 @@ jobs:
       with:
         dotnet-version: |
           6.0.x
+          7.0.x
     - name: Install dependencies
       run: |
         dotnet restore

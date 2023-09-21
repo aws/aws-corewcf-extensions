@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nuspec.props = nuspec.props
 		README.md = README.md
 		version.json = version.json
+		benchmark-aws-config.json = benchmark-aws-config.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AWS.WCF.Extensions.Tests", "test\AWS.WCF.Extensions.Tests\AWS.WCF.Extensions.Tests.csproj", "{660C7969-3A44-4B56-BE44-FF7DBFC8293A}"

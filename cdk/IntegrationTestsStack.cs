@@ -21,9 +21,17 @@ public class IntegrationTestsStack : Stack
     internal IntegrationTestsStack(Construct scope, string id, IStackProps props = null)
         : base(scope, id, props)
     {
-        CreateGitHubOidcTestRunner();
+        var githubIdentity = CreateGitHubOidcTestRunner();
+
+        AddTestRunnerRole(githubIdentity);
+        AddDeployRoleToGitHub(githubIdentity);
 
         CreateSQSReadOnlyRole();
+
+        new BenchmarkToolCdkConstruct(
+            this,
+            new BenchmarkToolCdkStackProps { GithubOidcIdentityPrincipal = githubIdentity }
+        );
 
         new Queue(
             this,
@@ -78,7 +86,7 @@ public class IntegrationTestsStack : Stack
     /// GitHub Documentation: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
     /// Example Blog: https://towardsthecloud.com/aws-cdk-openid-connect-github
     /// </remarks>
-    private void CreateGitHubOidcTestRunner()
+    private WebIdentityPrincipal CreateGitHubOidcTestRunner()
     {
         var githubProvider = new OpenIdConnectProvider(
             this,
@@ -105,6 +113,11 @@ public class IntegrationTestsStack : Stack
             }
         );
 
+        return assumeRoleIdentity;
+    }
+
+    private void AddTestRunnerRole(WebIdentityPrincipal assumeRoleIdentity)
+    {
         var githubTestRunnerRole = new Role(
             this,
             "githubIntegrationTestRunnerRole",
@@ -126,7 +139,10 @@ public class IntegrationTestsStack : Stack
                 ExportName = "githubIntegrationTestRunnerRoleArn"
             }
         );
+    }
 
+    private void AddDeployRoleToGitHub(WebIdentityPrincipal assumeRoleIdentity)
+    {
         var githubDeployRole = new Role(
             this,
             "githubDeployToS3Role",

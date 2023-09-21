@@ -27,6 +27,7 @@ cache:
 
 before_script:
   - apk add dotnet6-sdk
+  - apk add dotnet7-sdk
   - apk add git jq nodejs npm
   - npm install -g aws-cdk
   - apk add --no-cache aws-cli 

@@ -1,0 +1,17 @@
+{
+    "Region": "us-west-2",
+    "Targets": [
+        {
+            "Ami": "ami-05044d26cbbf3c8cf",
+            "IAMRole": "BENCHMARK_EC2_INSTANCE_PROFILE_ARN",
+            "Instances": [
+                { "Value": "c4.large" },
+                { "Value": "c4.xlarge" },
+                { "Value": "c4.2xlarge" }
+            ],
+            "InstallDotNetSdk": true
+        }
+    ],
+    "BenchmarkDotnetCliToolNugetSource": "BENCHMARK_TOOL_PRIVATE_FEED",
+    "S3BucketName": "BENCHMARK_BUCKET_NAME"
+}

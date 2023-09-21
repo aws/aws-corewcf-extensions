@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AWS.CoreWCF.Extensions.SQS.Channels;
 using AWS.CoreWCF.Extensions.SQS.Infrastructure;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Order;
@@ -97,6 +98,22 @@ namespace AWS.Extensions.PerformanceTests
                     .AddDiagnoser(MemoryDiagnoser.Default, ThreadingDiagnoser.Default, ExceptionDiagnoser.Default)
                     .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method))
                     .WithOptions(ConfigOptions.JoinSummary)
+                    .AddColumn(
+                        // Add Custom Columns from running on EC2 Hosts via SSM
+                        new TagColumn(
+                            "Processor Count",
+                            _ => Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS") ?? ""
+                        ),
+                        new TagColumn(
+                            "Instance ID",
+                            _ => Environment.GetEnvironmentVariable("AWS_SSM_INSTANCE_ID") ?? ""
+                        ),
+                        new TagColumn("Region", _ => Environment.GetEnvironmentVariable("AWS_SSM_REGION_NAME") ?? ""),
+                        new TagColumn(
+                            "EC2 Instance Type",
+                            _ => Environment.GetEnvironmentVariable("EC2_INSTANCE_TYPE") ?? ""
+                        )
+                    )
             );
         }
     }
