@@ -39,6 +39,43 @@ jobs:
     - name: Test
       # runs all automated tests
       run: dotnet test --configuration Release --no-restore --verbosity normal
+  
+  build-and-benchmark:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Versions
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+        dotnet tool install --add-source ${{ secrets.AWS_BENCHMARK_TOOL_PRIVATE_FEED }} BenchmarkDotnetCliTool
+    - name: Prepare Benchmark AWS Config Json
+      run: |
+        # update config file with values from secrets
+        $json = Get-Content benchmark-aws-config.json
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_EC2_INSTANCE_PROFILE_ARN", "${{ secrets.AWS_BENCHMARK_EC2_INSTANCE_PROFILE_ARN }}")
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_BUCKET_NAME", "${{ secrets.AWS_BENCHMARK_BUCKET_NAME }}")
+        $awsConfigJson | Out-File benchmark-aws-config.json
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_INTEGRATION_TEST_ROLE }}
+        role-session-name: github-cicd
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Run Benchmarking
+      run: |
+        # baseline is the most recent git tag
+        $baseline=(git tag -l --sort=-v:refname)[0]
+        #performance must degrade by atleast 10% to trigger alarm
+        $threshold=10.0
+        dotnet benchmark run aws native .\\\\test\\\\AWS.Extensions.PerformanceTests\\\\AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac .\\\\benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest

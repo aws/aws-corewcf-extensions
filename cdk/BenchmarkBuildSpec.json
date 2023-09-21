@@ -1,0 +1,37 @@
+
+{
+  "version": "0.2",
+  "phases": {
+    "install": {
+      "runtime-versions": {
+        "python": 38
+      },
+      "commands": [
+        "echo 'Installing the dotnet SDK, version 7.0.2xx. Expected installation directory: ~\\AppData\\Local\\Microsoft\\dotnet'",
+        "&powershell -NoProfile -ExecutionPolicy unrestricted -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Channel STS -InstallDir 'C:\\Program Files\\dotnet'\""
+      ]
+    },
+    "pre_build": {
+      "commands": [
+        // if storing BENCHMARK_EC2_INSTANCE_PROFILE_ARN and BENCHMARK_BUCKET_NAME as secrets, then update Update benchmark-aws-config.json here:
+        // $json = Get-Content \path\to\repo\benchmark-aws-config.json
+        "$json = $json.Replace('BENCHMARK_EC2_INSTANCE_PROFILE_ARN', $env:BENCHMARK_EC2_INSTANCE_PROFILE_ARN)",
+        "$json = $json.Replace('BENCHMARK_BUCKET_NAME', $env:BENCHMARK_BUCKET_NAME)"
+        "echo $json >> \path\to\repo\benchmark-aws-config.json",
+        "cat config.json"
+      ]
+    },
+    "build": {
+      "commands": [
+        "dotnet new tool-manifest",
+        "dotnet tool install --add-source https://d39g6ny1fu8scx.cloudfront.net/index.json BenchmarkDotnetCliTool",
+        "dotnet benchmark run aws managed .\\\\path\\\\to\\\\target.csproj  --targetApplicationRoot . -o . --tag vNext --baseline 1.9.6 --threshold 15 -ac .\\\\benchmark-aws-config.json.json -c .\\\\benchmark-targets.json"
+      ]
+    },
+    "post_build": {
+      "commands": [
+
+      ]
+    }
+  }
+}

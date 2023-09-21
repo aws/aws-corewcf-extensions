@@ -24,6 +24,17 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
                 }
             );
 
+            new BenchmarkToolCdkStack(
+                app,
+                "AWSCoreWCFServerExtensionsBenchmarkStack",
+                new StackProps
+                {
+                    // creds are defined in .gitlab-ci.yml
+
+                    TerminationProtection = true
+                }
+            );
+
             new CodeSigningAndDeployStack(
                 app,
                 "AWSCoreWCFServerExtensionsCodeSigning",
