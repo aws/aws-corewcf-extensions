@@ -35,6 +35,8 @@ public class CodeSigningAndDeployStackProps : StackProps
 [ExcludeFromCodeCoverage]
 public class CodeSigningAndDeployStack : Stack
 {
+    public static string GetInputBucketName(string account) => $"code-signing-and-deploy-pipeline-source-{account}";
+
     internal CodeSigningAndDeployStack(Construct scope, string id, CodeSigningAndDeployStackProps props = null)
         : base(scope, id, props)
     {
@@ -43,7 +45,7 @@ public class CodeSigningAndDeployStack : Stack
             "codeSigningAndDeployPipelineSource",
             new BucketProps
             {
-                BucketName = $"code-signing-and-deploy-pipeline-source-{Account}",
+                BucketName = GetInputBucketName(Account),
                 Versioned = true,
                 BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
                 EventBridgeEnabled = true

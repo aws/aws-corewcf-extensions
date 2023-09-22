@@ -126,8 +126,53 @@ public class IntegrationTestsStack : Stack
                 ExportName = "githubIntegrationTestRunnerRoleArn"
             }
         );
+
+        var githubDeployRole = new Role(
+            this,
+            "githubDeployToS3Role",
+            new RoleProps
+            {
+                AssumedBy = assumeRoleIdentity,
+                RoleName = "corewcfGithubDeployRole",
+                MaxSessionDuration = Duration.Hours(1),
+                InlinePolicies = new Dictionary<string, PolicyDocument>
+                {
+                    {
+                        "WriteToDeployPipeline",
+                        new PolicyDocument(
+                            new PolicyDocumentProps
+                            {
+                                AssignSids = true,
+                                Statements = new PolicyStatement[]
+                                {
+                                    new PolicyStatement(
+                                        new PolicyStatementProps
+                                        {
+                                            Actions = new[] { "s3:PutObject*" },
+                                            Resources = new[]
+                                            {
+                                                $"arn:aws:s3:::{CodeSigningAndDeployStack.GetInputBucketName(Account)}/*"
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        );
+
+        new CfnOutput(
+            this,
+            "githubDeployToS3RoleArn",
+            new CfnOutputProps { Value = githubDeployRole.RoleArn, ExportName = "githubDeployToS3RoleArn" }
+        );
     }
 
+    /// <summary>
+    /// Role is assumed by test code in <see cref="NegativeIntegrationTests.ClientWithInsufficientQueuePermissionsThrowsException"/>
+    /// </summary>
     private void CreateSQSReadOnlyRole()
     {
         var role = new Role(
