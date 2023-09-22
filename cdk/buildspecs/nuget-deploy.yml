@@ -10,7 +10,7 @@ phases:
       - export WCF_SECRET=$(aws secretsmanager get-secret-value --secret-id $SECRET_ARN_WCF_NUGET_PUBLISH_KEY | jq -r '.SecretString' | jq -r ".Key")
   build:
     commands:
-      - cd AWSCoreWCFServerExtensions
+      - if test -d AWSCoreWCFServerExtensions; then cd AWSCoreWCFServerExtensions; fi
       - echo "nuget push corewcf.package -ApiKey ${COREWCF_SECRET:0:3}"
       - echo "nuget push wcf.package -ApiKey ${WCF_SECRET:0:3}"
      # fail until build script is updated to actualy inovke nuget push command

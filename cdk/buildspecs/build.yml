@@ -4,7 +4,9 @@ phases:
   build:
     commands:
       - ls
-      - cd AWSCoreWCFServerExtensions
+      - if test -d AWSCoreWCFServerExtensions; then cd AWSCoreWCFServerExtensions; fi
+      - dotnet restore
+      - dotnet tool restore
       - dotnet build -c Release
 artifacts:
   files:
