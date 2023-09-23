@@ -123,25 +123,18 @@ public static class PipelineBuilderExtensions
 {
     public static Pipeline AddS3Source(this Pipeline pipeline, Bucket s3InputBucket, Artifact_ sourceOutput)
     {
-        pipeline.AddStage(
-            new StageOptions
+        var s3SourceAction = new S3SourceAction(
+            new S3SourceActionProps
             {
-                StageName = "Source",
-                Actions = new IAction[]
-                {
-                    new S3SourceAction(
-                        new S3SourceActionProps
-                        {
-                            ActionName = "Source",
-                            BucketKey = "AWSCoreWCFServerExtensions.zip",
-                            Bucket = s3InputBucket,
-                            Output = sourceOutput,
-                            Trigger = S3Trigger.EVENTS
-                        }
-                    )
-                }
+                ActionName = "Source",
+                BucketKey = "AWSCoreWCFServerExtensions.zip",
+                Bucket = s3InputBucket,
+                Output = sourceOutput,
+                Trigger = S3Trigger.POLL
             }
         );
+
+        pipeline.AddStage(new StageOptions { StageName = "Source", Actions = new IAction[] { s3SourceAction } });
 
         return pipeline;
     }
