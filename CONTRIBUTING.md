@@ -10,7 +10,7 @@ Please read through this document before submitting any issues or pull requests 
 
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.
 
-When filing an issue, please check [existing open](https://github.com/aws/INSERT_PROJECT_NAME_HERE/issues) and [closed](https://github.com/aws/INSERT_PROJECT_NAME_HERE/issues?q=is%3Aissue+is%3Aclosed) issues to make sure somebody else hasn't already reported the issue.
+When filing an issue, please check [existing open](https://github.com/aws/aws-corewcf-extensions/issues) and [closed](https://github.com/aws/aws-corewcf-extensions/issues?q=is%3Aissue+is%3Aclosed) issues to make sure somebody else hasn't already reported the issue.
 Please try to include as much information as you can.
 Details like these are incredibly useful:
 
@@ -26,7 +26,7 @@ Before starting a pull request, please ensure that:
 
 1. You open an issue first to discuss any significant work - we would hate for your time to be wasted.
 2. You are working against the latest source on the *main* branch.
-3. You check existing [open](https://github.com/aws/INSERT_PROJECT_NAME_HERE/pulls) and [merged](https://github.com/aws/INSERT_PROJECT_NAME_HERE/pulls?q=is%3Apr+is%3Aclosed) pull requests to make sure someone else hasn't addressed the problem already.
+3. You check existing [open](https://github.com/aws/aws-corewcf-extensions/pulls) and [merged](https://github.com/aws/aws-corewcf-extensions/pulls?q=is%3Apr+is%3Aclosed) pull requests to make sure someone else hasn't addressed the problem already.
 
 To send us a pull request, please:
 
@@ -40,19 +40,22 @@ To send us a pull request, please:
 GitHub provides additional documentation on [forking a repository](https://help.github.com/articles/fork-a-repo/) and [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 
-## Finding contributions to work on
-Looking at the existing issues is a great way to find something to contribute on.
-As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any ['help wanted'](https://github.com/aws/INSERT_PROJECT_NAME_HERE/labels/help%20wanted) issues is a great place to start.
-
-
 ## Code of Conduct
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
 For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 
 ## Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/).
-Please do **not** create a public GitHub issue.
+We take all security reports seriously.
+When we receive such reports,
+we will investigate and subsequently address
+any potential vulnerabilities as quickly as possible.
+
+If you discover a potential security issue in this project,
+please notify AWS/Amazon Security via our
+[vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/)
+or directly via email to [AWS Security](mailto:aws-security@amazon.com).
+Please do *not* create a public GitHub issue in this project.
 
 
 ## Licensing
