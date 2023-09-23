@@ -3,6 +3,7 @@
   "version": "0.1",
   "versionHeightOffset": "-1",
   "publicReleaseRefSpec": [
+    "^refs/heads/main$",
     "^refs/heads/release/v\\d+(?:\\.\\d+)?$"
   ],
   "cloudBuild": {
