@@ -52,7 +52,7 @@ public static class SQSServiceCollectionExtensions
         Func<IServiceProvider, IAmazonSQS> sqsClientBuilder
     )
     {
-        services.AddSingleton<ISQSMessageProvider, SQSMessageProvider>();
+        services.AddTransient<ISQSMessageProvider, SQSMessageProvider>();
 
         services.AddSingleton<NamedSQSClientCollection>(serviceProvider =>
         {
