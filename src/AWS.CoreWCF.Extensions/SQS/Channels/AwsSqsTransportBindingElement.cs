@@ -26,7 +26,6 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     private AwsSqsTransportBindingElement(AwsSqsTransportBindingElement other)
     {
         DispatchCallbacksCollection = other.DispatchCallbacksCollection;
-        QueueName = other.QueueName;
         ConcurrencyLevel = other.ConcurrencyLevel;
         MaxReceivedMessageSize = other.MaxReceivedMessageSize;
     }
@@ -36,11 +35,15 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
         var services = context.BindingParameters.Find<IServiceProvider>();
         var serviceDispatcher = context.BindingParameters.Find<IServiceDispatcher>();
         var messageEncoding = context.Binding.Elements.Find<TextMessageEncodingBindingElement>().WriteEncoding;
+        var queueName = serviceDispatcher.BaseAddress
+            .ToString()
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Last();
 
         var transport = new AwsSqsTransport(
             services,
             serviceDispatcher,
-            QueueName,
+            queueName,
             messageEncoding,
             DispatchCallbacksCollection,
             services.GetService<ILogger<AwsSqsTransport>>(),
@@ -56,11 +59,6 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
     /// Gets the scheme used by the binding, https
     /// </summary>
     public override string Scheme => "http";
-
-    /// <summary>
-    /// Specifies the name of the queue
-    /// </summary>
-    public string QueueName { get; set; }
 
     /// <summary>
     /// Contains the collection of callbacks available to be called after a message is dispatched

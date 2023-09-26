@@ -53,9 +53,6 @@ namespace AWS.Extensions.PerformanceTests
                 _queueName,
                 _queueUrl,
                 new AWS.CoreWCF.Extensions.SQS.Channels.AwsSqsBinding(concurrencyLevel: Threads)
-                {
-                    QueueName = _queueName
-                }
             );
 
             #endregion

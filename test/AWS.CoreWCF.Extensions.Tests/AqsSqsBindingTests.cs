@@ -13,7 +13,6 @@ public class AqsSqsBindingTests
         // ARRANGE
         var fakeDispatch = new DispatchCallbacksCollection();
         const long fakeMessageSize = 42L;
-        const string fakeQueue = "fakeQueue";
 
         var awsSqsBinding = new AwsSqsBinding { MaxMessageSize = 1 };
 
@@ -22,12 +21,10 @@ public class AqsSqsBindingTests
 
         transport.MaxReceivedMessageSize = fakeMessageSize;
         transport.DispatchCallbacksCollection = fakeDispatch;
-        transport.QueueName = fakeQueue;
 
         // ASSERT
         awsSqsBinding.DispatchCallbacksCollection.ShouldBe(fakeDispatch);
         awsSqsBinding.MaxMessageSize.ShouldBe(fakeMessageSize);
-        awsSqsBinding.QueueName.ShouldBe(fakeQueue);
         awsSqsBinding.Scheme.ShouldNotBeNullOrEmpty();
     }
 }

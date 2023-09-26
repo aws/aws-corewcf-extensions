@@ -40,10 +40,7 @@ namespace Server
             app.UseServiceModel(services =>
             {
                 services.AddService<LoggingService>();
-                services.AddServiceEndpoint<LoggingService, ILoggingService>(
-                    new AwsSqsBinding { QueueName = _queueName },
-                    queueUrl
-                );
+                services.AddServiceEndpoint<LoggingService, ILoggingService>(new AwsSqsBinding(), queueUrl);
             });
 
             app.Run();

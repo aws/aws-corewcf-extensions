@@ -52,10 +52,7 @@ app.UseServiceModel(services =>
 {
     services.AddService<LoggingService>();
     services.AddServiceEndpoint<LoggingService, ILoggingService>(
-        new AwsSqsBinding
-        {
-            QueueName = _queueName
-        },
+        new AwsSqsBinding(),
         queueUrl
     );
 });

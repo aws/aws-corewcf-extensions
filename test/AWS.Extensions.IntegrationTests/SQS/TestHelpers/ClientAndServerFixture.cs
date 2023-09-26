@@ -126,11 +126,7 @@ public class ClientAndServerFixture : IDisposable
                     {
                         services.AddService<LoggingService>();
                         services.AddServiceEndpoint<LoggingService, ILoggingService>(
-                            new AwsSqsBinding
-                            {
-                                QueueName = queueName,
-                                DispatchCallbacksCollection = dispatchCallbacks
-                            },
+                            new AwsSqsBinding { DispatchCallbacksCollection = dispatchCallbacks },
                             queueUrl
                         );
                     });

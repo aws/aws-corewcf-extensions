@@ -28,13 +28,6 @@ public class AwsSqsBinding : Binding
 
     public override BindingElementCollection CreateBindingElements() => new() { _encoding, _transport };
 
-    /// <inheritdoc cref="AwsSqsTransportBindingElement.QueueName"/>
-    public string QueueName
-    {
-        get => _transport.QueueName;
-        set => _transport.QueueName = value;
-    }
-
     /// <inheritdoc cref="AwsSqsTransportBindingElement.MaxReceivedMessageSize"/>
     public long MaxMessageSize
     {
