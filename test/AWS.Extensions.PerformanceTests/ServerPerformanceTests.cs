@@ -22,7 +22,7 @@ namespace AWS.Extensions.PerformanceTests
         private readonly string _queueName = $"{nameof(ServerPerformanceTests)}-{DateTime.Now.Ticks}";
         private string _queueUrl = "";
 
-        [Params(1, 8, 16)]
+        [Params(1, 4)]
         public int Threads { get; set; }
 
         [GlobalSetup]
@@ -46,6 +46,9 @@ namespace AWS.Extensions.PerformanceTests
 
         public async Task StartupHost()
         {
+            Console.WriteLine();
+            Console.WriteLine("================================");
+            Console.WriteLine("================================");
             Console.WriteLine($"Begin {nameof(StartupHost)}");
 
             #region Configure Host
@@ -60,24 +63,8 @@ namespace AWS.Extensions.PerformanceTests
 
             #region Pre Saturate Queue
 
-            var message = $"{_queueName}-Message";
+            await ClientMessageGenerator.SaturateQueue(_setupSqsClient, _queueName, _queueUrl);
 
-            var rawMessage = ClientMessageGenerator.BuildRawClientMessage<ILoggingService>(
-                _queueUrl,
-                loggingClient => loggingClient.LogMessage(message)
-            );
-
-            for (var j = 0; j < 100; j++)
-            {
-                var batchMessages = Enumerable
-                    .Range(0, 10)
-                    .Select(_ => new SendMessageBatchRequestEntry(Guid.NewGuid().ToString(), rawMessage))
-                    .ToList();
-
-                await _setupSqsClient!.SendMessageBatchAsync(_queueUrl, batchMessages);
-            }
-
-            Console.WriteLine("Queue Saturation Complete");
             #endregion
         }
 
@@ -117,6 +104,33 @@ namespace AWS.Extensions.PerformanceTests
 
     public static class ClientMessageGenerator
     {
+        public static async Task SaturateQueue(
+            IAmazonSQS setupSqsClient,
+            string queueName,
+            string queueUrl,
+            int numMessages = 1000
+        )
+        {
+            var message = $"{queueName}-Message";
+
+            var rawMessage = ClientMessageGenerator.BuildRawClientMessage<ILoggingService>(
+                queueUrl,
+                loggingClient => loggingClient.LogMessage(message)
+            );
+
+            for (var j = 0; j < numMessages / 10; j++)
+            {
+                var batchMessages = Enumerable
+                    .Range(0, 10)
+                    .Select(_ => new SendMessageBatchRequestEntry(Guid.NewGuid().ToString(), rawMessage))
+                    .ToList();
+
+                await setupSqsClient!.SendMessageBatchAsync(queueUrl, batchMessages);
+            }
+
+            Console.WriteLine("Queue Saturation Complete");
+        }
+
         public static string BuildRawClientMessage<TContract>(string queueUrl, Action<TContract> clientAction)
             where TContract : class
         {
