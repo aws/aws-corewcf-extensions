@@ -1,31 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Permissions;
 using System.ServiceModel;
-using Amazon.Extensions.NETCore.Setup;
 using Amazon.SQS;
-using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
-using AWS.CoreWCF.Extensions.SQS.Infrastructure;
-using AWS.Extensions.IntegrationTests.Common;
-using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
-using AWS.Extensions.IntegrationTests.SQS.TestService;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
-using AWS.Extensions.PerformanceTests.Common;
 using BenchmarkDotNet.Attributes;
-using CoreWCF.Configuration;
-using CoreWCF.Queue.Common.Configuration;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AWS.Extensions.PerformanceTests
 {
+    /// <inheritdoc cref="Program"/>
     [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
-    [SimpleJob(launchCount: 1, warmupCount: 1, iterationCount: 2)]
+    [SimpleJob(launchCount: 1, warmupCount: 0, iterationCount: 2)]
     [ExcludeFromCodeCoverage]
     public class ClientPerformanceTests
     {
-        [Params(8, 16, 32)]
+        [Params(2, 4, 8)]
         public int Threads { get; set; }
 
         private ILoggingService[] _clients = Array.Empty<ILoggingService>();

@@ -11,8 +11,9 @@ using NSubstitute;
 
 namespace AWS.Extensions.PerformanceTests
 {
+    /// <inheritdoc cref="Program"/>
     [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
-    [SimpleJob(launchCount: 1, warmupCount: 1, iterationCount: 2)]
+    [SimpleJob(launchCount: 1, warmupCount: 1, iterationCount: 1)]
     [ExcludeFromCodeCoverage]
     public class ServerPerformanceTests
     {
