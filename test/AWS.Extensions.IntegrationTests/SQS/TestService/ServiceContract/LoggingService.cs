@@ -32,6 +32,7 @@ public interface ILoggingService
 }
 
 [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
+[SimulateWorkBehavior]
 public class LoggingService : ILoggingService
 {
     public static readonly ConcurrentBag<string> LogResults = new();
@@ -39,7 +40,6 @@ public class LoggingService : ILoggingService
     public void LogMessage(string toLog)
     {
         LogResults.Add(toLog);
-        Thread.Sleep(TimeSpan.FromMilliseconds(10));
     }
 
     public void CauseFailure()
