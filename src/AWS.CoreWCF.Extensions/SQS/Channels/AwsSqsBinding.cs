@@ -1,20 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
+﻿using AWS.CoreWCF.Extensions.SQS.DispatchCallbacks;
 using CoreWCF.Channels;
+using CoreWCF.Configuration;
 
 namespace AWS.CoreWCF.Extensions.SQS.Channels;
 
 /// <summary>
-/// TODO
+/// Constructs a new <see cref="Binding"/> that uses Amazon SQS as a transport
+/// and can be registered in
+/// <see cref="IServiceBuilder.AddServiceEndpoint{TService,TContract}(Binding,string)"/>
 /// </summary>
 public class AwsSqsBinding : Binding
 {
     private readonly TextMessageEncodingBindingElement _encoding;
     private readonly AwsSqsTransportBindingElement _transport;
 
-    /// <summary>
-    /// Creates an SQS binding
-    /// </summary>
+    /// <inheritdoc cref="AwsSqsBinding"/>
     /// <param name="concurrencyLevel">Maximum number of workers polling the queue for messages</param>
     public AwsSqsBinding(int concurrencyLevel = 1)
     {

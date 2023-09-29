@@ -6,13 +6,19 @@ namespace AWS.CoreWCF.Extensions.SQS.Infrastructure;
 
 public static class SQSServiceCollectionExtensions
 {
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="queueName"></param>
-    /// <param name="sqsClientBuilder"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="AddSQSClient(IServiceCollection,IEnumerable{string},Func{IServiceProvider,IAmazonSQS}?)"/>
+    /// <param name="services">
+    /// <see cref="IServiceCollection"/> container.
+    /// </param>
+    /// <param name="queueName">
+    /// Names of the Amazon SQS Queues that this CoreWCF Server
+    /// will listen to.
+    /// </param>
+    /// <param name="sqsClientBuilder">
+    /// Optional function to build the <see cref="IAmazonSQS"/> client.  This is useful
+    /// in cases where you need to provide specific credentials or otherwise customize
+    /// the client object.
+    /// </param>
     public static IServiceCollection AddSQSClient(
         this IServiceCollection services,
         string queueName,
@@ -24,12 +30,24 @@ public static class SQSServiceCollectionExtensions
     }
 
     /// <summary>
-    /// TODO
+    /// Registers an <see cref="IAmazonSQS"/> client for use by a CoreWCF server and lists the
+    /// queues the client will listen to.
+    /// <para />
+    /// This method can be invoked multiple times to register multiple clients.  See the README.md
+    /// for more information on how multiple clients impact performance.
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="queueNames"></param>
-    /// <param name="sqsClientBuilder"></param>
-    /// <returns></returns>
+    /// <param name="services">
+    /// <see cref="IServiceCollection"/> container.
+    /// </param>
+    /// <param name="queueNames">
+    /// The names of one or more Amazon SQS Queues that this CoreWCF Server
+    /// will listen to.
+    /// </param>
+    /// <param name="sqsClientBuilder">
+    /// Optional function to build the <see cref="IAmazonSQS"/> client.  This is useful
+    /// in cases where you need to provide specific credentials or otherwise customize
+    /// the client object.
+    /// </param>
     public static IServiceCollection AddSQSClient(
         this IServiceCollection services,
         IEnumerable<string> queueNames,
