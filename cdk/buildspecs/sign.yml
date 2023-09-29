@@ -20,4 +20,4 @@ phases:
       - dotnet pack -c Release --no-build ./src/AWS.CoreWCF.Extensions --output .
 artifacts:
   files:
-    - '**/*.nupkg'
+    - '**/*.*nupkg'
