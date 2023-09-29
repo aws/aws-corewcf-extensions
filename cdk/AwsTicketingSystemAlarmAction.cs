@@ -13,7 +13,7 @@ public class AwsTicketingSystemAlarmAction : DeputyBase, IAlarmAction
     public AwsTicketingSystemAlarmAction(AwsTicketingSystemAlarmActionProps props)
     {
         _alarmActionArn = Encode(
-            $"{props.ArnPrefix}:{props.Severity}:{props.Cti.Category}:{props.Cti.Type}:{props.Cti.Item}:{props.Cti.ResolverGroup}"
+            $"{props.ArnPrefix}:{props.Severity}:{props.Cti.Category}:{props.Cti.Type}:{props.Cti.Item}:{props.Cti.ResolverGroup}:{props.DedupeMessage}"
         );
     }
 
@@ -34,6 +34,7 @@ public class AwsTicketingSystemAlarmActionProps
     public string ArnPrefix { get; set; }
     public string Severity { get; set; }
     public Cti Cti { get; set; }
+    public string DedupeMessage { get; set; }
 }
 
 [ExcludeFromCodeCoverage]

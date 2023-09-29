@@ -2,7 +2,7 @@ name: Canary
 
 on:
  schedule:
-  - cron: '0 9,14 * * *'  # every day at 9am and 2pm
+  - cron: '10 */4 * * *'  # At 10 minutes past the hour, every 4 hours
 env:
   AWS_REGION : "us-west-2"
 # permission can be added at job level or workflow level

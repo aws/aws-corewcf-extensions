@@ -78,7 +78,9 @@ public class CanaryMonitoringStack : Stack
 
     private IAlarm CreateCanaryDetectedFailedTestsAlarm(Metric canaryDetectedFailedTestsMetric)
     {
-        var alarm = new Alarm(
+        const string dedupeString = "CanaryDetectedFailedTests";
+
+        var canaryDetectedFailedTestsAlarm = new Alarm(
             this,
             "CanaryDetectedFailedTestsAlarm",
             new AlarmProps
@@ -97,18 +99,51 @@ public class CanaryMonitoringStack : Stack
         );
 
         // create a ticket in the event the alarm is triggered
-        alarm.AddAlarmAction(
+        canaryDetectedFailedTestsAlarm.AddAlarmAction(
             new AwsTicketingSystemAlarmAction(
                 new AwsTicketingSystemAlarmActionProps
                 {
                     ArnPrefix = _props.TicketingArn,
                     Cti = _props.TicketingCti,
-                    Severity = "3"
+                    Severity = "3",
+                    DedupeMessage = dedupeString
                 }
             )
         );
 
-        return alarm;
+        // alarm if we haven't had success for 1 days,
+        var multipleFailureAlarm = new Alarm(
+            this,
+            "MultipleCanariesWithFailedTestsAlarm",
+            new AlarmProps
+            {
+                AlarmName = "Multiple CoreWCF.SQS Canary Detected Failed Tests Alarm",
+                AlarmDescription =
+                    "Multiple failures detected by the CoreWCF.SQS Canary Workflow.  See "
+                    + "https://github.com/aws/aws-corewcf-extensions/actions/workflows/canary.yml",
+                Metric = canaryDetectedFailedTestsMetric.With(new MetricOptions { Period = Duration.Hours(24) }),
+                ComparisonOperator = ComparisonOperator.LESS_THAN_THRESHOLD,
+                Threshold = 1,
+                EvaluationPeriods = 1,
+                DatapointsToAlarm = 1,
+                TreatMissingData = TreatMissingData.IGNORE
+            }
+        );
+
+        // create a ticket in the event the multiple failure alarm is triggered
+        multipleFailureAlarm.AddAlarmAction(
+            new AwsTicketingSystemAlarmAction(
+                new AwsTicketingSystemAlarmActionProps
+                {
+                    ArnPrefix = _props.TicketingArn,
+                    Cti = _props.TicketingCti,
+                    Severity = "2.5",
+                    DedupeMessage = dedupeString
+                }
+            )
+        );
+
+        return canaryDetectedFailedTestsAlarm;
     }
 
     private IAlarm CreateCanaryDidNotRunAlarm(Metric canaryDetectedFailedTestsMetric)
@@ -146,7 +181,7 @@ public class CanaryMonitoringStack : Stack
                 {
                     ArnPrefix = _props.TicketingArn,
                     Cti = _props.TicketingCti,
-                    Severity = "3"
+                    Severity = "2.5"
                 }
             )
         );
