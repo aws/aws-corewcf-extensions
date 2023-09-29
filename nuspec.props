@@ -16,12 +16,4 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-  <!-- Enable deterministic builds during CI build. See https://github.com/clairernovotny/DeterministicBuilds for more info-->
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  <!-- Add package to enable SourceLink metadata -->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-  </ItemGroup>
 </Project>
