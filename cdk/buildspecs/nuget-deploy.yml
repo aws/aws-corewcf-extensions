@@ -11,9 +11,7 @@ phases:
   build:
     commands:
       - if test -d AWSCoreWCFServerExtensions; then cd AWSCoreWCFServerExtensions; fi
-      - echo 'dotnet nuget push "AWS.CoreWCF.Extensions*.nupkg" --api-key ${COREWCF_SECRET:0:3}'
-      - echo 'dotnet nuget push "AWS.CoreWCF.Extensions*.snupkg" --api-key ${COREWCF_SECRET:0:3}'
-      - echo 'dotnet nuget push "AWS.WCF.Extensions*.nupkg" --api-key ${COREWCF_SECRET:0:3}'
-      - echo 'dotnet nuget push "AWS.WCF.Extensions*.snupkg" --api-key ${COREWCF_SECRET:0:3}'
-      # fail until build script is updated to actualy inovke nuget push command
-      - exit 255
+      - dotnet nuget push "AWS.CoreWCF.Extensions*.nupkg" --api-key ${COREWCF_SECRET}
+      - dotnet nuget push "AWS.CoreWCF.Extensions*.snupkg" --api-key ${COREWCF_SECRET}
+      - dotnet nuget push "AWS.WCF.Extensions*.nupkg" --api-key ${WCF_SECRET}
+      - dotnet nuget push "AWS.WCF.Extensions*.snupkg" --api-key ${WCF_SECRET}
