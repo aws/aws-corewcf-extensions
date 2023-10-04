@@ -11,6 +11,8 @@
     <!-- Include license file in packages -->
     <Content Include="$(MSBuildThisFileDirectory)\LICENSE" Pack="true" PackagePath="\" />
     <Content Include="$(MSBuildThisFileDirectory)\THIRD-PARTY" Pack="true" PackagePath="\" />
+    <!-- Include icon file in packages -->
+    <Content Include="$(MSBuildThisFileDirectory)\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)nuspec.props" Condition="('$(IsTestProject)' != 'true') AND Exists('$(MSBuildThisFileDirectory)nuspec.props')" />
 </Project>

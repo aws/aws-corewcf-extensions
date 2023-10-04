@@ -15,5 +15,6 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IconUrl>https://sdk-for-net.amazonwebservices.com/images/AWSLogo128x128.png</IconUrl>
   </PropertyGroup>
 </Project>
