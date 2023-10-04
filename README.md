@@ -7,6 +7,13 @@ The AWS.CoreWCF.Extensions package contains async binding and transports for Cor
 
 The AWS.WCF.Extensions package contains extensions for WCF Clients to send messages via a SQS transport.
 
+## Package Status
+
+| Package                                                                                      | NuGet Stable                                                                                     | Downloads                                                                                     |
+|:---------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------:|
+| [AWS.CoreWCF.Extensions](https://www.nuget.org/packages/AWS.CoreWCF.Extensions/) | [![AWS.CoreWCF.Extensions](https://img.shields.io/nuget/v/AWS.CoreWCF.Extensions.svg)](https://www.nuget.org/packages/AWS.CoreWCF.Extensions/) | [![AWS.CoreWCF.Extensions](https://img.shields.io/nuget/dt/AWS.CoreWCF.Extensions)](https://www.nuget.org/packages/AWS.CoreWCF.Extensions/) |
+| [AWS.WCF.Extensions](https://www.nuget.org/packages/AWS.WCF.Extensions/)                                 | [![AWS.WCF.Extensions](https://img.shields.io/nuget/v/AWS.WCF.Extensions.svg)](https://www.nuget.org/packages/AWS.WCF.Extensions/)                                 | [![AWS.WCF.Extensions](https://img.shields.io/nuget/dt/AWS.WCF.Extensions)](https://www.nuget.org/packages/AWS.WCF.Extensions/)
+
 ## Getting Started
 
 For a Full Example, see the [sample](./sample/README.md) app.
