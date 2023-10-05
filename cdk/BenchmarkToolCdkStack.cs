@@ -1,23 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using Amazon.CDK;
-using Amazon.CDK.AWS.CodeBuild;
 using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.S3;
-using Amazon.CDK.AWS.SecretsManager;
 using Constructs;
 
 namespace AWS.CoreWCF.ServerExtensions.Cdk
 {
+    public class BenchmarkToolCdkStackProps : IStackProps
+    {
+        public WebIdentityPrincipal GithubOidcIdentityPrincipal { get; set; }
+    }
+
     [ExcludeFromCodeCoverage]
     public class BenchmarkToolCdkStack : Stack
     {
-        internal BenchmarkToolCdkStack(Construct scope, string id, IStackProps props = null)
+        internal BenchmarkToolCdkStack(Construct scope, string id, BenchmarkToolCdkStackProps props)
             : base(scope, id, props)
         {
-            bool createCodeBuild = false;
             bool createGitHubUser = true;
 
             // Create Bucket to Store Benchmark Input, Output, and Results
@@ -40,105 +41,17 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
 
             var benchmarkEC2InstanceProfile = CreateEC2InstanceProfileAndRole(benchmarkEC2Role);
 
-            if (createCodeBuild)
-            {
-                // Define a Role that Code Build job will use
-                var codeBuildRole = new Role(
-                    this,
-                    "benchmarkingCodeBuildRole",
-                    new RoleProps
-                    {
-                        AssumedBy = new ServicePrincipal("codebuild.amazonaws.com"),
-                        RoleName = "sampleBenchmarkingCodeBuildRole"
-                    }
-                );
-
-                var codeBuildJob = new Amazon.CDK.AWS.CodeBuild.Project(
-                    this,
-                    "sampleProject",
-                    new ProjectProps
-                    {
-                        Role = codeBuildRole,
-                        ProjectName = "Sample-Benchmark-CodeBuild-Project",
-                        Environment = new BuildEnvironment
-                        {
-                            BuildImage = WindowsBuildImage.WIN_SERVER_CORE_2019_BASE_2_0,
-                            ComputeType = WindowsBuildImage.WIN_SERVER_CORE_2019_BASE_2_0.DefaultComputeType,
-                            EnvironmentVariables = new Dictionary<string, IBuildEnvironmentVariable>
-                            {
-                                {
-                                    "BENCHMARK_BUCKET_NAME",
-                                    new BuildEnvironmentVariable { Value = coreWcfSqsBenchmarkBucket.BucketName }
-                                },
-                                {
-                                    "BENCHMARK_EC2_INSTANCE_PROFILE_ARN",
-                                    new BuildEnvironmentVariable { Value = benchmarkEC2InstanceProfile.AttrArn }
-                                },
-                                {
-                                    "DOTNET_CLI_TELEMETRY_OPTOUT",
-                                    new BuildEnvironmentVariable { Value = "1" }
-                                },
-                                {
-                                    "DOTNET_SKIP_FIRST_TIME_EXPERIENCE",
-                                    new BuildEnvironmentVariable { Value = "true" }
-                                }
-                            }
-                        },
-                        BuildSpec = BuildSpec.FromAsset(GetBuildSpecPath()),
-                        Source = Source.GitHub(
-                            new GitHubSourceProps { Owner = "aws", Repo = "porting-assistant-dotnet-client" }
-                        )
-                    }
-                );
-
-                SetCodeBuildRolePolicies(codeBuildRole, codeBuildJob, coreWcfSqsBenchmarkBucket, benchmarkEC2Role);
-                SetBenchmarkRolePolicies(
-                    codeBuildRole,
-                    (_, policy) => codeBuildRole.AddToPolicy(policy),
-                    coreWcfSqsBenchmarkBucket,
-                    benchmarkEC2Role
-                );
-            }
-
-            AccessKey githubUserAccessKey = null;
-            Secret githubUserAccessKeySecret = null;
-            if (createGitHubUser)
-            {
-                var githubIamUser = new User(
-                    this,
-                    "corewcf-sqs-github-user",
-                    new UserProps { UserName = "benchmarkingGitHubUser" }
-                );
-
-                githubUserAccessKey = new AccessKey(
-                    this,
-                    "corewcf-sqs-github-user-accesskey",
-                    new AccessKeyProps { User = githubIamUser, Status = AccessKeyStatus.ACTIVE }
-                );
-
-                githubUserAccessKeySecret = new Secret(
-                    this,
-                    "corewcf-sqs-github-user-accesskey-secret",
-                    new SecretProps { SecretStringValue = githubUserAccessKey.SecretAccessKey }
-                );
-
-                SetBenchmarkRolePolicies(
-                    githubIamUser,
-                    (_, policy) => githubIamUser.AddToPolicy(policy),
-                    coreWcfSqsBenchmarkBucket,
-                    benchmarkEC2Role
-                );
-            }
-
-            GenerateCfnOutputs(
+            SetBenchmarkRolePolicies(
+                props.GithubOidcIdentityPrincipal,
+                (_, policy) => props.GithubOidcIdentityPrincipal.AddToPolicy(policy),
                 coreWcfSqsBenchmarkBucket,
-                benchmarkEC2InstanceProfile,
-                githubUserAccessKey,
-                githubUserAccessKeySecret
+                benchmarkEC2Role
             );
+
+            GenerateCfnOutputs(coreWcfSqsBenchmarkBucket, benchmarkEC2InstanceProfile);
         }
 
-        internal Role CreateEC2InstanceRole(Bucket tuxnetBenchmarkBucket)
+        internal Role CreateEC2InstanceRole(Bucket benchmarkBucket)
         {
             // Define a Role for dynamically created EC2 instances
             // (they need to be able to communicate with SSM)
@@ -152,8 +65,8 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
                 }
             );
 
-            // let EC2 write to tuxnetBenchmarkBucket
-            tuxnetBenchmarkBucket.GrantReadWrite(benchmarkEC2Role);
+            // let EC2 write to benchmarkBucket
+            benchmarkBucket.GrantReadWrite(benchmarkEC2Role);
 
             // let EC2 use SSM
             benchmarkEC2Role.AddManagedPolicy(ManagedPolicy.FromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"));
@@ -174,36 +87,6 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
             );
 
             return instanceProfile;
-        }
-
-        internal void SetCodeBuildRolePolicies(
-            Role codeBuildRole,
-            Project codeBuildJob,
-            Bucket tuxnetBenchmarkBucket,
-            Role benchmarkEC2Role
-        )
-        {
-            // Let Code Build do all the Code Build things
-            codeBuildRole.AddToPolicy(
-                new PolicyStatement(
-                    new PolicyStatementProps
-                    {
-                        Actions = new[] { "logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents" },
-                        Resources = new[] { "*" }
-                    }
-                )
-            );
-
-            // Let code Build log
-            codeBuildRole.AddToPolicy(
-                new PolicyStatement(
-                    new PolicyStatementProps
-                    {
-                        Actions = new[] { "codebuild:*" },
-                        Resources = new[] { codeBuildJob.ProjectArn }
-                    }
-                )
-            );
         }
 
         internal void SetBenchmarkRolePolicies<T>(
@@ -272,18 +155,7 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
             );
         }
 
-        private string GetBuildSpecPath()
-        {
-            // TODO: Verify path is correct
-            return Path.Combine(System.Environment.CurrentDirectory, "BenchmarkBuildSpec.json");
-        }
-
-        private void GenerateCfnOutputs(
-            Bucket tuxnetBenchmarkBucket,
-            CfnInstanceProfile benchmarkEC2InstanceProfile,
-            AccessKey githubUserAccessKey,
-            Secret githubUserAccessKeySecret
-        )
+        private void GenerateCfnOutputs(Bucket tuxnetBenchmarkBucket, CfnInstanceProfile benchmarkEC2InstanceProfile)
         {
             new CfnOutput(
                 this,
@@ -300,25 +172,6 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
                 "roleArn",
                 new CfnOutputProps { Value = benchmarkEC2InstanceProfile.AttrArn, ExportName = "benchmarkEC2RoleArn" }
             );
-
-            if (null != githubUserAccessKey)
-            {
-                new CfnOutput(
-                    this,
-                    "accessKeyId",
-                    new CfnOutputProps { Value = githubUserAccessKey.AccessKeyId, ExportName = "githubUserAccessKeyId" }
-                );
-
-                new CfnOutput(
-                    this,
-                    "accessKeySecret",
-                    new CfnOutputProps
-                    {
-                        Value = githubUserAccessKeySecret.SecretValue.UnsafeUnwrap(),
-                        ExportName = "githubUserAccessSecret"
-                    }
-                );
-            }
         }
     }
 }
