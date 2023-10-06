@@ -42,6 +42,9 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
 
             var benchmarkEC2Role = CreateEC2InstanceRole(scope, coreWcfSqsBenchmarkBucket);
 
+            // Let EC2 Role run Performance Tests
+            benchmarkEC2Role.AddManagedPolicy(ManagedPolicy.FromAwsManagedPolicyName("AdministratorAccess"));
+
             var benchmarkEC2InstanceProfile = CreateEC2InstanceProfileAndRole(scope, benchmarkEC2Role);
 
             SetBenchmarkRolePolicies(

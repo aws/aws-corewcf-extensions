@@ -23,6 +23,7 @@ public class IntegrationTestsStack : Stack
     {
         var githubIdentity = CreateGitHubOidcTestRunner();
 
+        AddTestRunnerRole(githubIdentity);
         AddDeployRoleToGitHub(githubIdentity);
 
         CreateSQSReadOnlyRole();
@@ -115,7 +116,7 @@ public class IntegrationTestsStack : Stack
         return assumeRoleIdentity;
     }
 
-    private void AddDeployRoleToGitHub(WebIdentityPrincipal assumeRoleIdentity)
+    private void AddTestRunnerRole(WebIdentityPrincipal assumeRoleIdentity)
     {
         var githubTestRunnerRole = new Role(
             this,
@@ -138,7 +139,10 @@ public class IntegrationTestsStack : Stack
                 ExportName = "githubIntegrationTestRunnerRoleArn"
             }
         );
+    }
 
+    private void AddDeployRoleToGitHub(WebIdentityPrincipal assumeRoleIdentity)
+    {
         var githubDeployRole = new Role(
             this,
             "githubDeployToS3Role",
