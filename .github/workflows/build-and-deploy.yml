@@ -60,8 +60,9 @@ jobs:
     - name: Prepare Benchmark AWS Config Json
       shell: pwsh
       run: |
+        Get-Content benchmark-aws-config.json
         # update config file with values from secrets
-        $awsConfigJson = Get-Content ./benchmark-aws-config.json
+        $awsConfigJson = Get-Content benchmark-aws-config.json
         $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_EC2_INSTANCE_PROFILE_ARN", "${{ secrets.AWS_BENCHMARK_EC2_INSTANCE_PROFILE_ARN }}")
         $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_BUCKET_NAME", "${{ secrets.AWS_BENCHMARK_BUCKET_NAME }}")
         $awsConfigJson | Out-File benchmark-aws-config.json
@@ -74,12 +75,13 @@ jobs:
     - name: Run Benchmarking
       shell: pwsh
       run: |
+        Get-Cone    
         # baseline is the most recent git tag
         $baseline=(git tag -l --sort=-v:refname)[0]
         #performance must degrade by atleast 10% to trigger alarm
         $threshold=10.0
         #dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
-        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $baseline -ac ./benchmark-aws-config.json
+        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $baseline -ac benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest
