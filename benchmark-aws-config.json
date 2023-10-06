@@ -2,7 +2,7 @@
     "Region": "us-west-2",
     "Targets": [
         {
-            "Ami": "ami-03f65b8614a860c29",
+            "Ami": "ami-05044d26cbbf3c8cf",
             "IAMRole": "BENCHMARK_EC2_INSTANCE_PROFILE_ARN",
             "Instances": [
                 { "Value": "c4.large" },
