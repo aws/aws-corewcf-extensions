@@ -9,7 +9,7 @@
                 { "Value": "c4.xlarge" },
                 { "Value": "c4.2xlarge" }
             ],
-            "InstallDotNetSdk": true            
+            "InstallDotNetSdk": true
         }
     ],
     "BenchmarkDotnetCliToolNugetSource": "BENCHMARK_TOOL_PRIVATE_FEED",
