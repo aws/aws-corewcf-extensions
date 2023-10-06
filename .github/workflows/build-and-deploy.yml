@@ -40,7 +40,7 @@ jobs:
       # runs all automated tests
       run: dotnet test --configuration Release --no-restore --verbosity normal
   
-  build-and-benchmark:
+  benchmark:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
@@ -79,7 +79,9 @@ jobs:
 
   trigger-deploy:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: 
+      - build-and-test
+      - benchmark
     steps:
     - uses: actions/checkout@v2
       # set fetch-depth to 0 to get full git history, needed for NerdBank GitVersion to caclulate version
