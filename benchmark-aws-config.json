@@ -2,7 +2,6 @@
     "Region": "us-west-2",
     "Targets": [
         {
-            // AWS Provided Ubuntu 22.04 LTS ami in us-west-2
             "Ami": "ami-03f65b8614a860c29",
             "IAMRole": "BENCHMARK_EC2_INSTANCE_PROFILE_ARN",
             "Instances": [
