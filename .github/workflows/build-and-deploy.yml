@@ -65,6 +65,7 @@ jobs:
         $awsConfigJson = Get-Content benchmark-aws-config.json
         $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_EC2_INSTANCE_PROFILE_ARN", "${{ secrets.AWS_BENCHMARK_EC2_INSTANCE_PROFILE_ARN }}")
         $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_BUCKET_NAME", "${{ secrets.AWS_BENCHMARK_BUCKET_NAME }}")
+        $awsConfigJson = $awsConfigJson.Replace("BENCHMARK_TOOL_PRIVATE_FEED", "${{ secrets.AWS_BENCHMARK_TOOL_PRIVATE_FEED }}")
         $awsConfigJson | Out-File benchmark-aws-config.json
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2

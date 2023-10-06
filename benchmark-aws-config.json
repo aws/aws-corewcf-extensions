@@ -10,7 +10,7 @@
                 { "Value": "c4.2xlarge" }
             ],
             "InstallDotNetSdk": true,
-            "InitializationPowershellScript": ""
+            "InitializationPowershellScript": "dotnet tool install --add-source BENCHMARK_TOOL_PRIVATE_FEED BenchmarkDotnetCliTool"
         }
     ],
     "S3BucketName": "BENCHMARK_BUCKET_NAME"
