@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using Amazon.CDK;
 using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.S3;
-using Constructs;
 
 namespace AWS.CoreWCF.ServerExtensions.Cdk
 {
@@ -14,49 +13,58 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
     }
 
     [ExcludeFromCodeCoverage]
-    public class BenchmarkToolCdkStack : Stack
+    public class BenchmarkToolCdkConstruct
     {
-        internal BenchmarkToolCdkStack(Construct scope, string id, BenchmarkToolCdkStackProps props)
-            : base(scope, id, props)
+        internal BenchmarkToolCdkConstruct(Stack scope, BenchmarkToolCdkStackProps props)
         {
-            bool createGitHubUser = true;
-
             // Create Bucket to Store Benchmark Input, Output, and Results
             var coreWcfSqsBenchmarkBucket = new Bucket(
-                this,
+                scope,
                 "corewcf-sqs-benchmark-bucket",
                 new BucketProps
                 {
                     BlockPublicAccess = BlockPublicAccess.BLOCK_ACLS,
                     Versioned = false,
-                    BucketName = $"corewcf-sqs-benchmark-bucket-{Account}",
-#if DEBUG
-                    AutoDeleteObjects = true,
-                    RemovalPolicy = RemovalPolicy.DESTROY
-#endif
+                    BucketName = $"corewcf-sqs-benchmark-bucket-{scope.Account}"
                 }
             );
 
-            var benchmarkEC2Role = CreateEC2InstanceRole(coreWcfSqsBenchmarkBucket);
+            var githubPerformanceTestRunnerRole = new Role(
+                scope,
+                "githubPerformanceTestRunnerRole",
+                new RoleProps
+                {
+                    AssumedBy = props.GithubOidcIdentityPrincipal,
+                    RoleName = "githubPerformanceTestRunnerRole",
+                    MaxSessionDuration = Duration.Hours(1)
+                }
+            );
 
-            var benchmarkEC2InstanceProfile = CreateEC2InstanceProfileAndRole(benchmarkEC2Role);
+            var benchmarkEC2Role = CreateEC2InstanceRole(scope, coreWcfSqsBenchmarkBucket);
+
+            var benchmarkEC2InstanceProfile = CreateEC2InstanceProfileAndRole(scope, benchmarkEC2Role);
 
             SetBenchmarkRolePolicies(
-                props.GithubOidcIdentityPrincipal,
-                (_, policy) => props.GithubOidcIdentityPrincipal.AddToPolicy(policy),
+                githubPerformanceTestRunnerRole,
+                (_, policy) => githubPerformanceTestRunnerRole.AddToPolicy(policy),
                 coreWcfSqsBenchmarkBucket,
                 benchmarkEC2Role
             );
 
-            GenerateCfnOutputs(coreWcfSqsBenchmarkBucket, benchmarkEC2InstanceProfile);
+            GenerateCfnOutputs(
+                scope,
+                githubPerformanceTestRunnerRole,
+                coreWcfSqsBenchmarkBucket,
+                benchmarkEC2InstanceProfile
+            );
         }
 
-        internal Role CreateEC2InstanceRole(Bucket benchmarkBucket)
+        internal Role CreateEC2InstanceRole(Stack scope, Bucket benchmarkBucket)
         {
             // Define a Role for dynamically created EC2 instances
             // (they need to be able to communicate with SSM)
             var benchmarkEC2Role = new Role(
-                this,
+                scope,
                 "benchmarkingEC2Role",
                 new RoleProps
                 {
@@ -74,10 +82,10 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
             return benchmarkEC2Role;
         }
 
-        internal CfnInstanceProfile CreateEC2InstanceProfileAndRole(Role benchmarkEC2Role)
+        internal CfnInstanceProfile CreateEC2InstanceProfileAndRole(Stack scope, Role benchmarkEC2Role)
         {
             var instanceProfile = new CfnInstanceProfile(
-                this,
+                scope,
                 "benchmarkingEC2InstanceProfile",
                 new CfnInstanceProfileProps
                 {
@@ -92,15 +100,15 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
         internal void SetBenchmarkRolePolicies<T>(
             T target,
             Action<T, PolicyStatement> addToPolicy,
-            Bucket tuxnetBenchmarkBucket,
+            Bucket benchmarkResultsBucket,
             Role benchmarkEC2Role
         )
             where T : IGrantable
         {
-            // Let Code Build read/write to S3 Tuxnet Benchmark Bucket
-            tuxnetBenchmarkBucket.GrantReadWrite(target);
+            // Enable read/write to S3 Benchmark Results Bucket
+            benchmarkResultsBucket.GrantReadWrite(target);
 
-            // Let Code Build create/delete EC2 instances
+            // Enable create/delete EC2 instances
             addToPolicy(
                 target,
                 new PolicyStatement(
@@ -155,21 +163,36 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
             );
         }
 
-        private void GenerateCfnOutputs(Bucket tuxnetBenchmarkBucket, CfnInstanceProfile benchmarkEC2InstanceProfile)
+        private void GenerateCfnOutputs(
+            Stack scope,
+            Role githubPerformanceTestRunnerRole,
+            Bucket benchmarkResultsBucket,
+            CfnInstanceProfile benchmarkEC2InstanceProfile
+        )
         {
             new CfnOutput(
-                this,
-                "bucketName",
+                scope,
+                "githubBenchmarkTestRunnerArn",
                 new CfnOutputProps
                 {
-                    Value = tuxnetBenchmarkBucket.BucketName,
-                    ExportName = "coreWcfSqsBenchmarkBucket"
+                    Value = githubPerformanceTestRunnerRole.RoleArn,
+                    ExportName = "githubBenchmarkTestRunnerArn"
                 }
             );
 
             new CfnOutput(
-                this,
-                "roleArn",
+                scope,
+                "coreWcfSqsBenchmarkResultsBucket",
+                new CfnOutputProps
+                {
+                    Value = benchmarkResultsBucket.BucketName,
+                    ExportName = "coreWcfSqsBenchmarkResultsBucket"
+                }
+            );
+
+            new CfnOutput(
+                scope,
+                "benchmarkEC2RoleArn",
                 new CfnOutputProps { Value = benchmarkEC2InstanceProfile.AttrArn, ExportName = "benchmarkEC2RoleArn" }
             );
         }

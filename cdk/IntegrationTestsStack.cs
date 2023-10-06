@@ -27,10 +27,9 @@ public class IntegrationTestsStack : Stack
 
         CreateSQSReadOnlyRole();
 
-        new BenchmarkToolCdkStack(
+        new BenchmarkToolCdkConstruct(
             this,
-            "benchmark-tool-infra",
-            new BenchmarkToolCdkStackProps { githubOidcIdentityPrincipal = githubIdentity }
+            new BenchmarkToolCdkStackProps { GithubOidcIdentityPrincipal = githubIdentity }
         );
 
         new Queue(

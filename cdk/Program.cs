@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Amazon.CDK;
 using Environment = System.Environment;
 
@@ -16,17 +15,6 @@ namespace AWS.CoreWCF.ServerExtensions.Cdk
             new IntegrationTestsStack(
                 app,
                 "AWSCoreWCFServerExtensionsIntegrationTests",
-                new StackProps
-                {
-                    // creds are defined in .gitlab-ci.yml
-
-                    TerminationProtection = true
-                }
-            );
-
-            new BenchmarkToolCdkStack(
-                app,
-                "AWSCoreWCFServerExtensionsBenchmarkStack",
                 new StackProps
                 {
                     // creds are defined in .gitlab-ci.yml
