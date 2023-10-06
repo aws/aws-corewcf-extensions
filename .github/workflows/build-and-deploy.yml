@@ -72,6 +72,7 @@ jobs:
         role-session-name: github-cicd
         aws-region: ${{ env.AWS_REGION }}
     - name: Run Benchmarking
+      shell: pwsh
       run: |
         # baseline is the most recent git tag
         $baseline=(git tag -l --sort=-v:refname)[0]
