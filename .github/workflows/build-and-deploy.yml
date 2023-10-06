@@ -75,7 +75,6 @@ jobs:
     - name: Run Benchmarking
       shell: pwsh
       run: |
-        Get-Cone    
         # baseline is the most recent git tag
         $baseline=(git tag -l --sort=-v:refname)[0]
         #performance must degrade by atleast 10% to trigger alarm
