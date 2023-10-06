@@ -41,7 +41,7 @@ jobs:
       run: dotnet test --configuration Release --no-restore --verbosity normal
   
   benchmark:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
       with:
@@ -58,6 +58,7 @@ jobs:
         dotnet tool restore
         dotnet tool install --add-source ${{ secrets.AWS_BENCHMARK_TOOL_PRIVATE_FEED }} BenchmarkDotnetCliTool
     - name: Prepare Benchmark AWS Config Json
+      shell: pwsh
       run: |
         # update config file with values from secrets
         $awsConfigJson = Get-Content ./benchmark-aws-config.json
@@ -76,7 +77,7 @@ jobs:
         $baseline=(git tag -l --sort=-v:refname)[0]
         #performance must degrade by atleast 10% to trigger alarm
         $threshold=10.0
-        dotnet benchmark run aws native .\\\\test\\\\AWS.Extensions.PerformanceTests\\\\AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac .\\\\benchmark-aws-config.json
+        dotnet benchmark run aws native .\test\AWS.Extensions.PerformanceTests\AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac .\benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest
