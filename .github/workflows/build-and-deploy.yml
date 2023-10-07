@@ -81,8 +81,10 @@ jobs:
         $baseline=(git tag -l --sort=-v:refname)[0]
         #performance must degrade by atleast 10% to trigger alarm
         $threshold=10.0
-        #dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
-        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $baseline -ac benchmark-aws-config.json
+        echo "baseline: $baseline"
+        echo "threshold: $threshold"
+        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
+        #dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $baseline -ac benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest
