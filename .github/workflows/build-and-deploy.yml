@@ -87,6 +87,8 @@ jobs:
         echo "current: $current"
         echo "baseline: $baseline"
         echo "threshold: $threshold"
+        # DO NOT MERGE:
+        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $baseline --threshold $threshold -ac ./benchmark-aws-config.json
         dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $current --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
 
   trigger-deploy:
