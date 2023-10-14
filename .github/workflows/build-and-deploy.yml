@@ -77,13 +77,17 @@ jobs:
     - name: Run Benchmarking
       shell: pwsh
       run: |
-        # baseline is the most recent git tag --- todo: figure out when to bump tag.
-        $baseline=(git tag -l --sort=-v:refname)[0]
-        #performance must degrade by atleast 10% to trigger alarm
-        $threshold=10.0
+        # current is the more recent git tag and baseline is the tag before that
+        # this assumes that as part of the release process, the new tag has already
+        # been created
+        $current=(git tag -l --sort=-v:refname)[0]
+        $baseline=(git tag -l --sort=-v:refname)[1]
+        #performance must degrade by atleast 50% to trigger alarm
+        $threshold=50.0
+        echo "current: $current"
         echo "baseline: $baseline"
         echo "threshold: $threshold"
-        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag vNext --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
+        dotnet benchmark run aws native ./test/AWS.Extensions.PerformanceTests/AWS.Extensions.PerformanceTests.csproj  --targetApplicationRoot . -o . --tag $current --baseline $baseline --threshold $threshold -ac ./benchmark-aws-config.json
 
   trigger-deploy:
     runs-on: ubuntu-latest
