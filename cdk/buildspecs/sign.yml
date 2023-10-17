@@ -4,7 +4,10 @@ env:
   variables: 
     WCF_EXTENSIONS_PATH: ./src/AWS.WCF.Extensions/bin/Release/netstandard2.0
     COREWCF_EXTENSIONS_PATH: ./src/AWS.CoreWCF.Extensions/bin/Release/netstandard2.0
-phases:  
+phases:
+  install:
+    commands:
+      - curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 7.0
   build:
     commands:
       - ls
