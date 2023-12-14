@@ -48,6 +48,8 @@ jobs:
       run: |
         aws cloudwatch put-metric-data --namespace TuxNetOps --metric-name corewcf-sqs-canary --value 0
   canary-benchmark:
+    # disabled pending update to benachmark tool
+    if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
