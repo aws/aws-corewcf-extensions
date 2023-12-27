@@ -70,6 +70,10 @@ public class ClientAndServerIntegrationTests : IDisposable
             if (LoggingService.LogResults.Contains(expectedLogMessage))
             {
                 serverReceivedMessage = true;
+
+                // small sleep to allow corewcf to complete and fire callbacks
+                await Task.Delay(TimeSpan.FromMilliseconds(100));
+
                 break;
             }
 
