@@ -172,7 +172,7 @@ Please use these community resources for getting help. We use the GitHub issues
 for tracking bugs and feature requests.
 
 * If it turns out that you may have found a bug,
-  please open an [issue](https://github.com/aws/aws-corewcf-extensions/issues/new)
+  please open an [issue](https://github.com/aws/aws-corewcf-extensions/issues/new).
   
   
 ## How to use this code?
