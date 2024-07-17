@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using Amazon.SQS.Model;
 using Amazon.SQS;
+using Amazon.SQS.Model;
 
 namespace AWS.CoreWCF.Extensions.Common;
 

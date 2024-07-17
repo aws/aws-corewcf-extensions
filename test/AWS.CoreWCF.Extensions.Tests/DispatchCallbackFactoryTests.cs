@@ -43,13 +43,12 @@ namespace AWS.CoreWCF.Extensions.Tests
             fakeSns
                 .Received()
                 .PublishAsync(
-                    Arg.Is<PublishRequest>(
-                        req =>
-                            // make sure we are sending a failure notification
-                            req.Message.Contains("Failed")
-                            &&
-                            // make sure we are sending a notification about the correct queue
-                            req.Message.Contains(fakeMessageContext.MessageReceiptHandle)
+                    Arg.Is<PublishRequest>(req =>
+                        // make sure we are sending a failure notification
+                        req.Message.Contains("Failed")
+                        &&
+                        // make sure we are sending a notification about the correct queue
+                        req.Message.Contains(fakeMessageContext.MessageReceiptHandle)
                     ),
                     Arg.Any<CancellationToken>()
                 );

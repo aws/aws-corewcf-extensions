@@ -68,8 +68,8 @@ public static class ApplicationBuilderExtensions
         Func<CreateQueueRequest> createQueueRequestBuilder
     )
     {
-        var sqsClient = builder.ApplicationServices
-            .GetServices<NamedSQSClientCollection>()
+        var sqsClient = builder
+            .ApplicationServices.GetServices<NamedSQSClientCollection>()
             .SelectMany(x => x)
             .FirstOrDefault(x => string.Equals(x.QueueName, queueName, StringComparison.InvariantCultureIgnoreCase))
             ?.SQSClient;

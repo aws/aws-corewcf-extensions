@@ -35,8 +35,8 @@ public sealed class AwsSqsTransportBindingElement : QueueBaseTransportBindingEle
         var services = context.BindingParameters.Find<IServiceProvider>();
         var serviceDispatcher = context.BindingParameters.Find<IServiceDispatcher>();
         var messageEncoding = context.Binding.Elements.Find<TextMessageEncodingBindingElement>().WriteEncoding;
-        var queueName = serviceDispatcher.BaseAddress
-            .ToString()
+        var queueName = serviceDispatcher
+            .BaseAddress.ToString()
             .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
             .Last();
 

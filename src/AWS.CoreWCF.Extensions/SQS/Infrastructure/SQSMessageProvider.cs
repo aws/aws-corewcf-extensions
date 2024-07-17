@@ -43,8 +43,11 @@ internal class SQSMessageProvider : ISQSMessageProvider
                 queueUrl = namedSQSClient.SQSClient.GetQueueUrlAsync(namedSQSClient.QueueName).Result.QueueUrl;
 
                 messageVisibilityTimeout = TimeSpan.FromSeconds(
-                    namedSQSClient.SQSClient
-                        .GetQueueAttributesAsync(queueUrl, new List<string> { QueueAttributeName.VisibilityTimeout })
+                    namedSQSClient
+                        .SQSClient.GetQueueAttributesAsync(
+                            queueUrl,
+                            new List<string> { QueueAttributeName.VisibilityTimeout }
+                        )
                         .Result.VisibilityTimeout
                 );
             }

@@ -7,8 +7,8 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Validators;
-using CoreWCF.Configuration;
 using CoreWCF.Channels;
+using CoreWCF.Configuration;
 using CoreWCF.Queue.Common;
 
 namespace AWS.Extensions.PerformanceTests

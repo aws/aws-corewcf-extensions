@@ -22,8 +22,8 @@ namespace Server
             // otherwise it will default to searching ~\.aws
             var awsCredentials = new AWSOptions();
 
-            builder.Services
-                .AddDefaultAWSOptions(awsCredentials)
+            builder
+                .Services.AddDefaultAWSOptions(awsCredentials)
                 .AddServiceModelServices()
                 .AddQueueTransport()
                 .AddSQSClient(_queueName);

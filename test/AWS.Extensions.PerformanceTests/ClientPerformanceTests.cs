@@ -77,19 +77,18 @@ namespace AWS.Extensions.PerformanceTests
 
             var tasks = Enumerable
                 .Range(0, Threads)
-                .Select(
-                    id =>
-                        Task.Factory.StartNew(() =>
+                .Select(id =>
+                    Task.Factory.StartNew(() =>
+                    {
+                        var client = _clients[id];
+
+                        for (var i = 0; i < numberOfMessagesPerThread; i++)
                         {
-                            var client = _clients[id];
+                            client.LogMessage(constMessage);
+                        }
 
-                            for (var i = 0; i < numberOfMessagesPerThread; i++)
-                            {
-                                client.LogMessage(constMessage);
-                            }
-
-                            Console.WriteLine($"Client [{id}] has completed sending all messages");
-                        })
+                        Console.WriteLine($"Client [{id}] has completed sending all messages");
+                    })
                 );
 
             await Task.WhenAll(tasks);

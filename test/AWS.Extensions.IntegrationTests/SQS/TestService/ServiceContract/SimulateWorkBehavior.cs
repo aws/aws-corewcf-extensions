@@ -33,8 +33,8 @@ namespace AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract
     {
         public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
         {
-            var endpoints = serviceHostBase.ChannelDispatchers
-                .OfType<ChannelDispatcher>()
+            var endpoints = serviceHostBase
+                .ChannelDispatchers.OfType<ChannelDispatcher>()
                 .SelectMany(dispatcher => dispatcher.Endpoints);
 
             foreach (var endpointDispatcher in endpoints)

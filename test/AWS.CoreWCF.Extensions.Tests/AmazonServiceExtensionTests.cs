@@ -73,7 +73,8 @@ namespace AWS.CoreWCF.Extensions.Tests
             _eventHandler!.Invoke(_sqsClient, _webServiceRequestEventArgs);
 
             // ASSERT
-            _webServiceRequestEventArgs.Headers["User-Agent"]
+            _webServiceRequestEventArgs
+                .Headers["User-Agent"]
                 .Split(" ")
                 .Count(s => s.StartsWith("ft/corewcf"))
                 .ShouldBe(1);

@@ -17,8 +17,8 @@ public class SqsChannelFactory : ChannelFactoryBase<IOutputChannel>
         _bindingElement = bindingElement;
         BufferManager = BufferManager.CreateBufferManager(bindingElement.MaxBufferPoolSize, int.MaxValue);
 
-        IEnumerable<MessageEncodingBindingElement> messageEncoderBindingElements = context.BindingParameters
-            .OfType<MessageEncodingBindingElement>()
+        IEnumerable<MessageEncodingBindingElement> messageEncoderBindingElements = context
+            .BindingParameters.OfType<MessageEncodingBindingElement>()
             .ToList();
 
         if (messageEncoderBindingElements.Count() > 1)

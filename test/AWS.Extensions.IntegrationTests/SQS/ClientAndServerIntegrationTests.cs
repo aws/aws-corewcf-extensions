@@ -271,8 +271,8 @@ public class ClientAndServerIntegrationTests : IDisposable
     {
         try
         {
-            _clientAndServerFixture.SqsClient
-                ?.ClearQueues(
+            _clientAndServerFixture
+                .SqsClient?.ClearQueues(
                     ClientAndServerFixture.FifoQueueName,
                     ClientAndServerFixture.QueueWithDefaultSettings,
                     ClientAndServerFixture.SnsNotificationSuccessQueue
