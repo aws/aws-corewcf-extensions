@@ -1,6 +1,7 @@
 name: Canary
 
 on:
+ workflow_dispatch:
  schedule:
   - cron: '10 */4 * * *'  # At 10 minutes past the hour, every 4 hours
 env:
