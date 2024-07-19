@@ -96,7 +96,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: 
       - build-and-test
-      - benchmark
+      # benchmark step is disabled
+      #- benchmark
     steps:
     - uses: actions/checkout@v2
       # set fetch-depth to 0 to get full git history, needed for NerdBank GitVersion to caclulate version
