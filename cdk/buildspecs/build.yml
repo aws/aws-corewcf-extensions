@@ -3,11 +3,15 @@
 phases:
   install:
     commands:
-      - curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 7.0
+      # .NET 8 is already installed in CodeBuild Standard 7 image.
+      #- curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
   build:
     commands:
       - ls
       - if test -d AWSCoreWCFServerExtensions; then cd AWSCoreWCFServerExtensions; fi
+      # force codebuild to use latest SDK version, otherwise it will default to 6:
+      # https://github.com/aws/aws-codebuild-docker-images/blob/master/ubuntu/standard/7.0/Dockerfile#L197C26-L197C126
+      - dotnet new globaljson --force --sdk-version "8.0.0" --roll-forward latestMajor
       - dotnet restore
       - dotnet tool restore
       - dotnet build -c Release
