@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Amazon;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Shouldly;
@@ -14,6 +15,8 @@ public class IntegrationSetupTests
     public IntegrationSetupTests(ITestOutputHelper testOutput)
     {
         _testOutput = testOutput;
+
+        AWSConfigs.InitializeCollections = true;
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.ServiceModel;
+using Amazon;
 using Amazon.IdentityManagement;
 using Amazon.IdentityManagement.Model;
 using Amazon.SecurityToken.Model;
@@ -26,6 +27,8 @@ public class NegativeIntegrationTests : IDisposable
     {
         _output = output;
         _clientAndServerFixture = clientAndServerFixture;
+
+        AWSConfigs.InitializeCollections = true;
     }
 
     [Fact]

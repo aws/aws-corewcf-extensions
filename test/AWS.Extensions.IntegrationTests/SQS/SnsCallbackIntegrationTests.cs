@@ -1,4 +1,5 @@
-﻿using Amazon.SQS.Model;
+﻿using Amazon;
+using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
 using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using Xunit;
@@ -16,6 +17,8 @@ public class SnsCallbackIntegrationTests : IDisposable
     {
         _output = output;
         _clientAndServerFixture = clientAndServerFixture;
+
+        AWSConfigs.InitializeCollections = true;
     }
 
     /// <summary>

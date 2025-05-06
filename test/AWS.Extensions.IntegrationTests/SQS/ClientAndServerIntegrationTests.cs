@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Amazon;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using AWS.CoreWCF.Extensions.Common;
@@ -24,6 +25,8 @@ public class ClientAndServerIntegrationTests : IDisposable
     {
         _output = output;
         _clientAndServerFixture = clientAndServerFixture;
+
+        AWSConfigs.InitializeCollections = true;
     }
 
     [Theory]

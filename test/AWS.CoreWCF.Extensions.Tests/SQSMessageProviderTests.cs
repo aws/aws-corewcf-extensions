@@ -97,7 +97,7 @@ public class SQSMessageProviderTests
             .Returns(Task.FromResult(new GetQueueUrlResponse()));
         fakeSqsClient
             .GetQueueAttributesAsync(Arg.Any<string>(), Arg.Any<List<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(new GetQueueAttributesResponse()));
+            .Returns(Task.FromResult(new GetQueueAttributesResponse { Attributes = new() }));
 
         var listWithDuplicate = new List<NamedSQSClientCollection>
         {
