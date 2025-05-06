@@ -25,8 +25,7 @@ cache:
     # 3) Path to the directory where restored dependencies are kept.
     - '$NUGET_PACKAGES_DIRECTORY'
 
-before_script:
-  - apk add dotnet6-sdk
+before_script:  
   - apk add dotnet8-sdk
   - apk add git jq nodejs npm
   - npm install -g aws-cdk
