@@ -29,7 +29,7 @@ public class ClientAndServerIntegrationTests : IDisposable
 
         AWSConfigs.InitializeCollections = true;
     }
-    
+
     [RetryTheory(maxRetries: 3)]
     [InlineData(ClientAndServerFixture.QueueWithDefaultSettings)]
     [InlineData(ClientAndServerFixture.FifoQueueName)]
