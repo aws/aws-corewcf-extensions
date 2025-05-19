@@ -101,7 +101,7 @@ public class ClientAndServerFixture : IDisposable
         var snsClient = serviceProvider.GetService<IAmazonSimpleNotificationService>()!;
 
         var successTopicArn = snsClient.FindTopicAsync(SuccessTopicName).Result.TopicArn;
-        var failureTopicArn = snsClient.FindTopicAsync(SuccessTopicName).Result.TopicArn;
+        var failureTopicArn = snsClient.FindTopicAsync(FailureTopicName).Result.TopicArn;
 
         dispatchCallbacks ??= DispatchCallbacksCollectionFactory.GetDefaultCallbacksCollectionWithSns(
             successTopicArn,

@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.0" />
+    <PackageReference Include="xRetry" Version="1.9.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="CoreWCF.Queue" Version="1.7.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0">

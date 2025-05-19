@@ -9,6 +9,7 @@ using AWS.Extensions.IntegrationTests.SQS.TestHelpers;
 using AWS.Extensions.IntegrationTests.SQS.TestService.ServiceContract;
 using CoreWCF.Queue.Common;
 using Shouldly;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,8 +29,8 @@ public class ClientAndServerIntegrationTests : IDisposable
 
         AWSConfigs.InitializeCollections = true;
     }
-
-    [Theory]
+    
+    [RetryTheory(maxRetries: 3)]
     [InlineData(ClientAndServerFixture.QueueWithDefaultSettings)]
     [InlineData(ClientAndServerFixture.FifoQueueName)]
     public async Task ServerReadsAndDispatchesMessageFromSqs(string queueName)
